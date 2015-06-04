@@ -6,7 +6,7 @@
 #
 #   vagrant::plugin { 'boxen': ensure => absent }
 
-define seteam-autodemo::vagrant-plugin(
+define seteam_demobuild::vagrant_plugin(
   $ensure  = 'present',
   $force   = false,
   $license = undef,

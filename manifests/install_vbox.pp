@@ -3,10 +3,10 @@
 # Usage:
 #   
 #   include virtualbox
-class seteam-autodemo::install-vbox (
-  $version = '4.3.28',
-  $patch_level = '100309'
-) {
+class seteam_demobuild::install-vbox (
+  $version = $seteam_demobuild::params::vbox_version,
+  $patch_level = $seteam_demobuild::params::vbox_patch_level
+) inherits seteam_demobuild::params {
   # Install Virtual Box
   exec { 'Kill Virtual Box Processes':
     command     => 'pkill "VBoxXPCOMIPCD" || true && pkill "VBoxSVC" || true && pkill "VBoxHeadless" || true',

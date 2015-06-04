@@ -5,7 +5,7 @@
 #
 #   include vagrant
 
-class seteam-autodemo::install-vagrant(
+class seteam_demobuild::install_vagrant(
   $version = '1.7.2',
   $completion = false
 ) {
@@ -21,7 +21,7 @@ class seteam-autodemo::install-vagrant(
     require => Package["Vagrant_${version}"],
   }
 
-  seteam-autodemo::vagrant-plugin { 'vagrant-reload':
+  seteam_demobuild::vagrant_plugin { 'vagrant-reload':
     ensure => present,
     require  => Package[ "Vagrant_${version}"],
   }
