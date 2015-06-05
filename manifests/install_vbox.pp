@@ -3,7 +3,7 @@
 # Usage:
 #   
 #   include virtualbox
-class seteam_demobuild::install-vbox (
+class seteam_demobuild::install_vbox (
   $version = $seteam_demobuild::params::vbox_version,
   $patch_level = $seteam_demobuild::params::vbox_patch_level
 ) inherits seteam_demobuild::params {

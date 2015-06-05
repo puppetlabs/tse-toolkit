@@ -1,1 +1,1 @@
-include seteam-autodemo
+include seteam_demobuild
