@@ -2,44 +2,81 @@
 #	
 #	Install/bootstrap script for seteam_demobuild package.  Script will setup
 #	Puppet environment on Mac, and kick off a Puppet run to complete rest of 
-#	setup steps.
+#	the build.
+puts "\n\nBootstrapping TSE environment..."
+
+if ENV['USER'] != 'root'
+	puts "This script should be run as root.  Exiting."
+	exit
+end
 
 require "open-uri"
 
+puts "Getting Puppet package info on system..."
 $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
-$puppet_pkgs = [ "facter-latest.dmg", 
-								 "hiera-latest.dmg", 
-								 "puppet-latest.dmg"
-			   			 ]
+$pkgs = [ "facter", "hiera", "puppet" ]
 $html_lines = `curl #{$puppet_url_prefix}`.split("\n")
 $installed_pkgs = []		
 
-def get_pkgs(pkgs)
-
-	# Downloads relevant packages to install from Puppet Labs site
+def get_pkg(pkg)
+	# Downloads relevant package to install from Puppet Labs site
 	# Params:
 	# +pkgs+:: an array of packages to install
 
-  pkgs.each do |pkg|	
-    File.open(pkg, 'wb') do |fo|
-      fo.write open($puppet_url_prefix + pkg).read
-    end
+  File.open(pkg + "-latest.dmg", 'wb') do |fo|
+    fo.write open($puppet_url_prefix + pkg + "-latest.dmg").read
   end
 end
 
-def get_inst_pkgs()
+def pkginfo(pkgs)
+	# Wrapper function that will gather all info on installed and available
+	# packages to do later logic on what to install
+	# Params:
+	# +pkgs+:: Array of packages to install
+	# Returns:
+	# +pkgs_info+:: Array of hashes containing all package info
 
-	# Get list of packages currently installed on system
-
-	installed_pkgs = `pkgutil --packages | grep puppetlabs`.split("\n")
-
-	installed_pkgs.each do |pkg|
-		puts pkg
+  pkgs_info = []
+	pkgs.each do |pkg|
+		pkgs_info.push({ "app" => pkg, 
+			               "current" => get_instd_ver(pkg),
+			               "latest" => get_latest_ver(pkg),
+			             })
 	end
+
+  return pkgs_info
+end
+
+
+def get_instd_ver(pkg)
+	# Get info of package currently installed on system (or if it isn't installed)
+	# Params:
+	# +pkg+:: Package to look up
+	# Returns:
+	# +version+:: Version of package installed, 0 if not installed
+
+	instd_pkgs = `pkgutil --packages | grep puppetlabs`.split("\n")
+	installed = false
+	version = 0
+
+	instd_pkgs.each do |package|
+		if package.include? pkg 
+			installed = true
+		end
+	end
+
+	if installed
+		begin
+		  version = `#{pkg} --version`.chomp
+		rescue
+			puts "Looks like #{pkg} was uninstalled improperly... will try continuing."
+		end
+	end
+
+	return version
 end
 
 def get_latest_ver(pkg)
-
 	# Determine latest published Puppet dmgs from website
 	# Params:
 	# +pkg+:: Package to lookup
@@ -64,25 +101,30 @@ def get_latest_ver(pkg)
 	return latest
 end
 
+def install_pkgs(pkgs)
+	# Install packages or update as necessary
+	pkgs.each do |pkg|
+    if pkg["current"] == 0 # not installed
+    	puts "\nInstalling #{pkg["app"]}..."
+    	get_pkg(pkg["app"])
+    	system("hdiutil mount #{pkg["app"]}-latest.dmg")
 
-# Main
+    	puts "installing #{pkg["app"]}"
+    	system("installer -package /Volumes/#{pkg["app"]}-#{pkg["latest"]}/#{pkg["app"]}-#{pkg["latest"]}.pkg -target /")
 
-has_puppet = false
-has_facter = false
-has_hiera = false
-
-# Determine latest versions
-latest_puppet = get_latest_ver('puppet')
-latest_hiera = get_latest_ver('hiera')
-latest_facter = get_latest_ver('facter')
-
-if ENV['USER'] != 'root'
-	puts "This script should be run as root.  Exiting."
-	exit
-end
-
-if curr_puppet
-	puts 'it worked'
+    	puts "Cleaning up..."
+    	system("umount /Volumes/#{pkg["app"]}-#{pkg["latest"]}")
+    end
+  end
 end
 
 
+
+# MAIN
+
+package_info = pkginfo($pkgs)
+
+puts "Installing required packages..."
+install_pkgs(package_info)
+puts "\nInitiating Puppet run..."
+system("puppet apply --modulepath=\"/Users/kai\" tests/init.pp")
