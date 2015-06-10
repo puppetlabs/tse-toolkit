@@ -104,7 +104,14 @@ end
 def install_pkgs(pkgs)
 	# Install packages or update as necessary
 	pkgs.each do |pkg|
-    if pkg["current"] == 0 # not installed
+
+    if pkg["current"] != pkg["latest"] && pkg["current"] != 0 # not current
+      puts "Updating #{pkg["app"]} from #{pkg["current"]} to #{pkg["latest"]}."
+      system("rm /usr/bin/#{pkg["app"]}")
+      system("pkgutil --forget com.puppetlabs.#{pkg["app"]}")
+    end
+    
+    if pkg["current"] == 0 || pkg["current"] != pkg["latest"] 
     	puts "\nInstalling #{pkg["app"]}..."
     	get_pkg(pkg["app"])
     	system("hdiutil mount #{pkg["app"]}-latest.dmg")
@@ -127,4 +134,6 @@ package_info = pkginfo($pkgs)
 puts "Installing required packages..."
 install_pkgs(package_info)
 puts "\nInitiating Puppet run..."
-system("puppet apply --modulepath=\"/Users/kai\" tests/init.pp")
+system("puppet apply --modulepath='/Users/kai' tests/init.pp")
+
+
