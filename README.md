@@ -1,4 +1,4 @@
-# seteam-autodemo
+# seteam-demostack
 Bootstrap TSE demo environment on (mostly) clean Mac OS X box. Ruby script (autodemo.rb) will pull
 down necessary bits and packages to build base environment needed to bootstrap rest of TSE demo
 stack (Puppet client binaries and requisite code).
