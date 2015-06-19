@@ -3,20 +3,11 @@
 #	Install/bootstrap script for seteam_demobuild package.  Script will setup
 #	Puppet environment on Mac, and kick off a Puppet run to complete rest of 
 #	the build.
-puts "\n\nBootstrapping TSE environment..."
 
-if ENV['USER'] != 'root'
-	puts "This script should be run as root.  Exiting."
-	exit
-end
+require 'open-uri'
+require 'optparse'
 
-require "open-uri"
-
-puts "Getting Puppet package info on system..."
-$puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
-$pkgs = [ "facter", "hiera", "puppet" ]
-$html_lines = `curl #{$puppet_url_prefix}`.split("\n")
-$installed_pkgs = []		
+		
 
 def get_pkg(pkg)
 	# Downloads relevant package to install from Puppet Labs site
@@ -125,15 +116,54 @@ def install_pkgs(pkgs)
   end
 end
 
+def parse_options()
+  # Use optparse to get options
+  # Returns:
+  # +options+:: Command line arguments
+  #
+  ARGV << '-h' if ARGV.empty? # autodisplay help banner if no options
+  options = {}
+  optparse = OptionParser.new do|opts|
+    opts.banner = "\nUsage: autodemo.rb -u|--username username\n\n"
+    options[:username] = ""
+    
+    opts.on('-u', '--username USERNAME', "username is mandatory.") do|u|
+      options[:username] = u
+    end
 
+    opts.on_tail('-h', '--help') do
+      puts opts.banner
+      puts opts
+      exit
+    end
+  end.parse!
+
+  return options
+end
 
 # MAIN
+if __FILE__ == $0
+  # Bootstrap script and getopts
+  if ENV['USER'] != 'root'
+    puts "\nThis script should be run as root.  Exiting...\n\n"
+    exit
+  end
 
-package_info = pkginfo($pkgs)
+  options = parse_options()
 
-puts "Installing required packages..."
-install_pkgs(package_info)
-puts "\nInitiating Puppet run..."
-system("puppet apply --modulepath='/Users/kai' tests/init.pp")
+  puts "\n\nBootstrapping TSE environment..."
+  puts "Configuring environment for user #{options[:username]}"
+  puts "Getting Puppet package info on system..."
+  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
+  $pkgs = [ "facter", "hiera", "puppet" ]
+  $html_lines = `curl #{$puppet_url_prefix}`.split("\n")
+  $installed_pkgs = []
+#  package_info = pkginfo($pkgs)
+
+  #puts "Installing required packages..."
+  #install_pkgs(package_info)
+  #puts "\nInitiating Puppet run..."
+  #system("puppet apply --modulepath='/Users/kai' tests/init.pp")
+end
 
 
