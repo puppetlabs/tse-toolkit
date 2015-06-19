@@ -1,1 +1,1 @@
-include seteam_demobuild
+include seteam_demostack

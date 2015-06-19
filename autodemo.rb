@@ -94,14 +94,22 @@ end
 
 def install_pkgs(pkgs)
 	# Install packages or update as necessary
+  # Doing all removal before installation to avoid potential deletion clobeering issues between
+  # packages
 	pkgs.each do |pkg|
-
     if pkg["current"] != pkg["latest"] && pkg["current"] != 0 # not current
-      puts "Updating #{pkg["app"]} from #{pkg["current"]} to #{pkg["latest"]}."
-      system("rm /usr/bin/#{pkg["app"]}")
+      puts "\nRemoving #{pkg["app"]} version #{pkg["current"]}."
+      # HACK to clean up files from uninstall but retain configuration files.  
+      # Should revisit after all in one client is released.
+      system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg["app"]}| 
+             grep -v etc); do sudo rm /$f; done")
+      system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg["app"]} | 
+             grep #{pkg["app"]} | grep -v etc | tail -r); do sudo rmdir /$d; done")
       system("pkgutil --forget com.puppetlabs.#{pkg["app"]}")
     end
+  end
     
+  pkgs.each do |pkg|
     if pkg["current"] == 0 || pkg["current"] != pkg["latest"] 
     	puts "\nInstalling #{pkg["app"]}..."
     	get_pkg(pkg["app"])
@@ -112,6 +120,7 @@ def install_pkgs(pkgs)
 
     	puts "Cleaning up..."
     	system("umount /Volumes/#{pkg["app"]}-#{pkg["latest"]}")
+      system("rm #{pkg["app"]}-latest.dmg")
     end
   end
 end
@@ -154,14 +163,20 @@ if __FILE__ == $0
   puts "\n\nBootstrapping TSE environment..."
   puts "Configuring environment for user #{options[:username]}"
   puts "Getting Puppet package info on system..."
+
+  # Install Puppet
   $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
   $pkgs = [ "facter", "hiera", "puppet" ]
   $html_lines = `curl #{$puppet_url_prefix}`.split("\n")
   $installed_pkgs = []
-#  package_info = pkginfo($pkgs)
+  package_info = pkginfo($pkgs)
+  puts "Checking current Puppet packages..."
+  install_pkgs(package_info)
 
-  #puts "Installing required packages..."
-  #install_pkgs(package_info)
+  # Copy Puppet code to right location
+
+
+
   #puts "\nInitiating Puppet run..."
   #system("puppet apply --modulepath='/Users/kai' tests/init.pp")
 end
