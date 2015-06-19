@@ -2,19 +2,19 @@
 # forked from github:boxen/puppet-virtualbox
 # Usage:
 #
-#   seteam_demobuild::plugin { 'vmware-fusion': license => 'puppet:///some/license' }
+#   seteam_demostack::plugin { 'vmware-fusion': license => 'puppet:///some/license' }
 #
-#   seteam_demobuild::plugin { 'boxen': ensure => absent }
+#   seteam_demostack::plugin { 'boxen': ensure => absent }
 
-define seteam_demobuild::vagrant_plugin(
+define seteam_demostack::vagrant_plugin(
   $ensure  = 'present',
   $force   = false,
   $license = undef,
   $version = latest,
   $prefix  = true,
-  $user    = $seteam_demobuild::params::user
+  $user    = $seteam_demostack::params::user
 ) {
-  include seteam_demobuild::params
+  include seteam_demostack::params
   $plugin_name = $name
 
   if $license {

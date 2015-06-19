@@ -1,13 +1,13 @@
-# Installs VirtualBox
+# Configure VirtualBox
 # forked from github:boxen/puppet-virtualbox
 # Usage:
 #   
 #   include virtualbox
-class seteam_demobuild::install_vbox (
-  $version = $seteam_demobuild::params::vbox_version,
-  $patch_level = $seteam_demobuild::params::vbox_patch_level
-) inherits seteam_demobuild::params {
-  # Install Virtual Box
+class seteam_demostack::vbox (
+  $version = $seteam_demostack::params::vbox_version,
+  $patch_level = $seteam_demostack::params::vbox_patch_level
+) inherits seteam_demostack::params {
+
   exec { 'Kill Virtual Box Processes':
     command     => 'pkill "VBoxXPCOMIPCD" || true && pkill "VBoxSVC" || true && pkill "VBoxHeadless" || true',
     path        => '/usr/bin:/usr/sbin:/bin:/usr/local/bin',
@@ -17,9 +17,9 @@ class seteam_demobuild::install_vbox (
   # On OS X, Puppet leaves behind a file to 'know' it installed something, this cleans
   # it up. 
   exec { 'clean-vbox-install':
-    command => "/bin/rm /var/db/.puppet_pkgdmg_installed_VirtualBox-${version}-${patch_level}",
+    command => "/bin/rm /var/db/.puppet_pkgdmg_installed_VirtualBox*",
     onlyif  => [
-                "/bin/test -f /var/db/.puppet_pkgdmg_installed_VirtualBox-${version}-${patch_level}",
+                "/bin/test -f /var/db/.puppet_pkgdmg_installed_VirtualBox*",
                 "/bin/test ! -d /Applications/VirtualBox.app/"
                ],
   }

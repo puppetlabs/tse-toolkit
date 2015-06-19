@@ -1,4 +1,4 @@
-class seteam_demobuild::params {
+class seteam_demostack::params {
 
   # demobuild.rb should populate this stuff
   $user = 'kai'
