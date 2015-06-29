@@ -74,7 +74,6 @@ def get_latest_ver(pkg)
 	# Returns:
 	# +latest+:: Latest version of a package
 
-	
 	versions = []
 	latest = ''
 
@@ -92,13 +91,29 @@ def get_latest_ver(pkg)
 	return latest
 end
 
-def install_pkgs(pkgs)
-	# Install packages or update as necessary
-  # Doing all removal before installation to avoid potential deletion clobeering issues between
-  # packages
+def install_pkgs(pkgs, update)
+	# Install Puppet packages or update.  Default action is to install
+  # latest if there are no current versions, otherwise, it will not update
+  # unless '--update' is chosen. 
+  # Params:
+  # +pkgs+:: Array of package hashes: [{app =>, current =>, latest =>}]
+  # +update+:: Boolean to force update or not
+
+  # Logic to tell user what package update steps will be taken
+  if update
+    puts "Forcing update of all Puppet packages..."
+  end
+
+  if !update
+    puts "Update not invoked.  Will leave present Puppet packages alone..."
+  end
+   
+  # Remove previous version before installation to avoid potential deletion 
+  # clobeering issues between packages
 	pkgs.each do |pkg|
-    if pkg["current"] != pkg["latest"] && pkg["current"] != 0 # not current
-      puts "\nRemoving #{pkg["app"]} version #{pkg["current"]}."
+    if update && pkg["current"] != 0
+      puts "Force update of #{pkg["app"]} to version #{pkg["latest"]}."
+      puts "Removing #{pkg["app"]} version #{pkg["current"]}."
       # HACK to clean up files from uninstall but retain configuration files.  
       # Should revisit after all in one client is released.
       system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg["app"]}| 
@@ -107,10 +122,11 @@ def install_pkgs(pkgs)
              grep #{pkg["app"]} | grep -v etc | tail -r); do sudo rmdir /$d; done")
       system("pkgutil --forget com.puppetlabs.#{pkg["app"]}")
     end
+    puts "\n"
   end
     
   pkgs.each do |pkg|
-    if pkg["current"] == 0 || pkg["current"] != pkg["latest"] 
+    if pkg["current"] == 0 || update
     	puts "\nInstalling #{pkg["app"]}..."
     	get_pkg(pkg["app"])
     	system("hdiutil mount #{pkg["app"]}-latest.dmg")
@@ -122,7 +138,9 @@ def install_pkgs(pkgs)
     	system("umount /Volumes/#{pkg["app"]}-#{pkg["latest"]}")
       system("rm #{pkg["app"]}-latest.dmg")
     end
+    puts "\n"
   end
+
 end
 
 def parse_options()
@@ -132,12 +150,19 @@ def parse_options()
   #
   ARGV << '-h' if ARGV.empty? # autodisplay help banner if no options
   options = {}
+  options[:update] = false
   optparse = OptionParser.new do|opts|
+
+
     opts.banner = "\nUsage: autodemo.rb -u|--username username\n\n"
     options[:username] = ""
     
     opts.on('-u', '--username USERNAME', "username is mandatory.") do|u|
       options[:username] = u
+    end
+
+    opts.on('--update', "force update to latest versions of Puppet.") do
+      options[:update] = true
     end
 
     opts.on_tail('-h', '--help') do
@@ -167,15 +192,13 @@ if __FILE__ == $0
   # Install Puppet
   $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
   $pkgs = [ "facter", "hiera", "puppet" ]
-  $html_lines = `curl #{$puppet_url_prefix}`.split("\n")
+  $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
   $installed_pkgs = []
   package_info = pkginfo($pkgs)
   puts "Checking current Puppet packages..."
-  install_pkgs(package_info)
+  install_pkgs(package_info, options[:update])
 
   # Copy Puppet code to right location
-
-
 
   #puts "\nInitiating Puppet run..."
   #system("puppet apply --modulepath='/Users/kai' tests/init.pp")
