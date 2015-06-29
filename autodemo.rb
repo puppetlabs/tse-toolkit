@@ -3,6 +3,10 @@
 #	Install/bootstrap script for seteam_demobuild package.  Script will setup
 #	Puppet environment on Mac, and kick off a Puppet run to complete rest of 
 #	the build.
+#
+# Version works for all in one package
+# DONE: Read website, download package
+# TO DO: All in one install
 
 require 'open-uri'
 require 'optparse'
@@ -12,10 +16,25 @@ require 'optparse'
 def get_pkg(pkg)
 	# Downloads relevant package to install from Puppet Labs site
 	# Params:
-	# +pkgs+:: an array of packages to install
+	# +pkgs+:: an array of packages to install.  Each pkg 
+  #          should be a hash: { "app" => pkg, 
+  #                              "current" => get_instd_ver(pkg),
+  #                              "latest" => get_latest_ver(pkg),
+  #                            }
+  #                                                                      
 
-  File.open(pkg + "-latest.dmg", 'wb') do |fo|
-    fo.write open($puppet_url_prefix + pkg + "-latest.dmg").read
+  # Generate the right package name
+  # Format is: appname- + version- + osx- + osx version- + arch + .dmg
+  #            e.g., Puppet agent 1.2.0 for OX X 10.10 on x86-64 should be called
+  #            puppet-agent-1.2.0-osx-10.10-x86_64.dmg
+
+  pkg_name =  pkg["app"] + "-" + pkg["latest"] + "-osx-" + $osx_ver + "-x86_64.dmg"
+
+  puts $puppet_url_prefix
+  puts pkg_name
+
+  File.open(pkg_name, 'wb') do |fo|
+    fo.write open($puppet_url_prefix + pkg_name).read
   end
 end
 
@@ -79,7 +98,7 @@ def get_latest_ver(pkg)
 
 	$html_lines.each do |line|
 		# Match the version number on the puppet html and pull that out.
-	  my_match = /href\="#{pkg}\-(\d\.\d\.\d)\.dmg"/.match(line)
+	  my_match = /href\="#{pkg}\-(\d\.\d\.\d)\-.*"/.match(line)
 	  if my_match
 	  	versions.push(my_match[1])
 	  end
@@ -128,7 +147,7 @@ def install_pkgs(pkgs, update)
   pkgs.each do |pkg|
     if pkg["current"] == 0 || update
     	puts "\nInstalling #{pkg["app"]}..."
-    	get_pkg(pkg["app"])
+    	get_pkg(pkg)
     	system("hdiutil mount #{pkg["app"]}-latest.dmg")
 
     	puts "installing #{pkg["app"]}"
@@ -183,20 +202,27 @@ if __FILE__ == $0
     exit
   end
 
+  # Some variables that'll be needed 
   options = parse_options()
+  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/PC1/"
+  $pkgs = [ "puppet-agent" ]
+  $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
+  $installed_pkgs = []
+  $osx_ver = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
 
   puts "\n\nBootstrapping TSE environment..."
   puts "Configuring environment for user #{options[:username]}"
   puts "Getting Puppet package info on system..."
 
-  # Install Puppet
-  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
-  $pkgs = [ "facter", "hiera", "puppet" ]
-  $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
-  $installed_pkgs = []
+
+  # puts $html_lines
   package_info = pkginfo($pkgs)
+  get_pkg(package_info[0])
+
+  puts package_info
+
   puts "Checking current Puppet packages..."
-  install_pkgs(package_info, options[:update])
+  #install_pkgs(package_info, options[:update])
 
   # Copy Puppet code to right location
 
