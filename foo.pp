@@ -1,0 +1,3 @@
+user { 'bryan':
+  ensure => present,
+}

@@ -1,7 +1,7 @@
 class seteam_demostack::params {
 
   # demobuild.rb should populate this stuff
-  $user = 'kai'
+  $user = 'username'
   
   # Virtual Box stuff
   $vbox_version = '4.3.28'

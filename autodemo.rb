@@ -6,8 +6,29 @@
 
 require 'open-uri'
 require 'optparse'
+require 'fileutils'
 
-		
+def config_puppet(username)
+  # Ensure basic directory structure.  Set up parameters and move Puppet module into place
+  # Populates user parameter
+  # Params:
+  # +username+:: update username parameter to right user
+
+  if !File.directory?($puppet_modulepath)
+    puts 'got here?'
+    FileUtils.mkdir_p($puppet_modulepath)
+  end
+
+  FileUtils.cp_r($module_name, $puppet_modulepath)
+  
+  FileUtils.chown_R("puppet", "puppet", $module_path)
+
+  params_file = "#{$module_path}/manifests/params.pp"
+  params_text = File.read(params_file)
+  params_update = params_text.gsub(/\$user\ \=\ .*/, "$user = '#{username}'")
+  File.open(params_file, "w") {|file| file.puts params_update}
+
+end
 
 def get_pkg(pkg)
 	# Downloads relevant package to install from Puppet Labs site
@@ -37,7 +58,6 @@ def pkginfo(pkgs)
 
   return pkgs_info
 end
-
 
 def get_instd_ver(pkg)
 	# Get info of package currently installed on system (or if it isn't installed)
@@ -183,6 +203,15 @@ if __FILE__ == $0
     exit
   end
 
+  # Required vars
+  $puppet_modulepath = "/etc/puppet/modules"
+  $module_name = "seteam_demostack"
+  $module_path = "#{$puppet_modulepath}/#{$module_name}"
+  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
+  $pkgs = [ "facter", "hiera", "puppet" ]
+  $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
+
+  package_info = pkginfo($pkgs)
   options = parse_options()
 
   puts "\n\nBootstrapping TSE environment..."
@@ -190,18 +219,13 @@ if __FILE__ == $0
   puts "Getting Puppet package info on system..."
 
   # Install Puppet
-  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
-  $pkgs = [ "facter", "hiera", "puppet" ]
-  $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
-  $installed_pkgs = []
-  package_info = pkginfo($pkgs)
   puts "Checking current Puppet packages..."
   install_pkgs(package_info, options[:update])
 
   # Copy Puppet code to right location
+  puts "\nSetting up Puppet environment..."
+  config_puppet(options[:username])
 
-  #puts "\nInitiating Puppet run..."
-  #system("puppet apply --modulepath='/Users/kai' tests/init.pp")
+  puts "\nInitiating Puppet run..."
+  system("puppet apply -e 'include #{$module_name}'")
 end
-
-
