@@ -15,7 +15,6 @@ def config_puppet(username)
   # +username+:: update username parameter to right user
 
   if !File.directory?($puppet_modulepath)
-    puts 'got here?'
     FileUtils.mkdir_p($puppet_modulepath)
   end
 
