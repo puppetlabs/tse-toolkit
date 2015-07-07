@@ -31,8 +31,18 @@ Puppet::Type.newtype(:vagrant_plugin) do
       find_all{|s| s.type == :package and s[:name] =~ /^[Vv]agrant/ }.
       collect{|s| s[:name]}
   end
-
+  
+  # Modify to original boxen code here to prevent custom type from just outright
+  # failing if user homedir doesn't exist.  This allows creation of user account in same
+  # manifest.
+  #autorequire :file do
+  #  %W(#{Etc.getpwnam(self[:user]).dir}/.vagrant.d/license-#{self[:name]}.lic)
+  #end
   autorequire :file do
-    %W(#{Etc.getpwnam(self[:user]).dir}/.vagrant.d/license-#{self[:name]}.lic)
+    begin
+      %W(#{Etc.getpwnam(self[:user]).dir}/.vagrant.d/license-#{self[:name]}.lic)
+    rescue
+      puts "Homedir for :user doesn't exist, will try continuing..."
+    end
   end
 end

@@ -124,7 +124,7 @@ def install_pkgs(pkgs, update)
   end
 
   if !update
-    puts "Update not invoked.  Will leave present Puppet packages alone..."
+    puts "Update not invoked.  Will leave present Puppet packages alone if present..."
   end
    
   # Remove previous version before installation to avoid potential deletion 
@@ -221,7 +221,7 @@ if __FILE__ == $0
   puts "Checking current Puppet packages..."
   install_pkgs(package_info, options[:update])
 
-  # Copy Puppet code to right location
+  # Set up Puppet directories and put manifests in place
   puts "\nSetting up Puppet environment..."
   config_puppet(options[:username])
 
