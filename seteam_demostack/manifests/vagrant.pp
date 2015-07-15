@@ -30,6 +30,8 @@ class seteam_demostack::vagrant(
 
   file { "/Users/${user}/.vagrant.d":
     ensure  => directory,
+    owner   => $user,
+    group   => 'staff',
     require => Package["Vagrant_${version}"],
   }
 

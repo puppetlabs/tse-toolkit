@@ -4,10 +4,13 @@ down necessary bits and packages to build base environment needed to bootstrap r
 stack (Puppet client binaries and requisite code).
 
 ## Installation
-Run autodemo.rb, and the script should take care of the rest.  This will install latest Puppet
+Run autodemo.rb, and the script should take care of the rest.  You need to provide a user (-u|--username) or you'll just get instructions spit back :).  This will install latest Puppet
 agent for OS X, then kick off a Puppet run to install other packages and plugins.
 
 Current Install List
+* Puppet 
+* Facter
+* Hiera
 * VirtualBox
 * Vagrant
   * oscar

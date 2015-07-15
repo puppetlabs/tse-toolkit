@@ -51,10 +51,21 @@ Puppet::Type.type(:vagrant_plugin).provide(:vagrant_plugin, :parent => Puppet::P
 
   # We do not have access to model.catalog in self.class
   def user_plugins_json_files
-    users = model.catalog.resources.
+    users = @resource.catalog.resources.
       find_all{|s| s.type==:vagrant_plugin}.
       collect{|s| s[:user]}
+#      require 'pry'
+#      binding.pry
+#      collect nd_all{|s| s.type==:vagrant_plugin}.
+#      collect{|s| s[:user]}
 
+#    catalog.resources.collect do |r|
+#      if r.is_a?(Puppet::Type.type(:concat_fragment)) && r[:tag] == self[:tag]
+#        r.name
+#        end
+#      end.compact
+
+    
     users.uniq.inject(Hash.new) do |result, user|
       result[user] = "#{Etc.getpwnam(user).dir}/.vagrant.d/plugins.json"
       result

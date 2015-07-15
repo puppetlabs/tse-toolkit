@@ -3,6 +3,10 @@
 #	Install/bootstrap script for seteam_demobuild package.  Script will setup
 #	Puppet environment on Mac, and kick off a Puppet run to complete rest of 
 #	the build.
+#
+# Version works for all in one package
+# DONE: Read website, download package
+# TO DO: All in one install
 
 require 'open-uri'
 require 'optparse'
@@ -29,61 +33,28 @@ def config_puppet(username)
 
 end
 
-def get_pkg(pkg)
-	# Downloads relevant package to install from Puppet Labs site
+def get_pc1(pkg_name_prefix)
+	# Downloads PC1 package to install from Puppet Labs site
 	# Params:
-	# +pkgs+:: an array of packages to install
+	# +pkg_name_prefix+:: Name prefix of package to download
 
-  File.open(pkg + "-latest.dmg", 'wb') do |fo|
-    fo.write open($puppet_url_prefix + pkg + "-latest.dmg").read
+  File.open(pkg_name_prefix + ".dmg", 'wb') do |fo|
+    fo.write open($puppet_url_prefix + pkg_name_prefix + ".dmg").read
   end
 end
 
-def pkginfo(pkgs)
-	# Wrapper function that will gather all info on installed and available
+def pkginfo(pkg)
+	# Gather all info on installed and available
 	# packages to do later logic on what to install
 	# Params:
 	# +pkgs+:: Array of packages to install
 	# Returns:
 	# +pkgs_info+:: Array of hashes containing all package info
 
-  pkgs_info = []
-	pkgs.each do |pkg|
-		pkgs_info.push({ "app" => pkg, 
-			               "current" => get_instd_ver(pkg),
-			               "latest" => get_latest_ver(pkg),
-			             })
-	end
-
-  return pkgs_info
-end
-
-def get_instd_ver(pkg)
-	# Get info of package currently installed on system (or if it isn't installed)
-	# Params:
-	# +pkg+:: Package to look up
-	# Returns:
-	# +version+:: Version of package installed, 0 if not installed
-
-	instd_pkgs = `pkgutil --packages | grep puppetlabs`.split("\n")
-	installed = false
-	version = 0
-
-	instd_pkgs.each do |package|
-		if package.include? pkg 
-			installed = true
-		end
-	end
-
-	if installed
-		begin
-		  version = `#{pkg} --version`.chomp
-		rescue
-			puts "Looks like #{pkg} was uninstalled improperly... will try continuing."
-		end
-	end
-
-	return version
+	pkg_hash = { "app"       => pkg, 
+               "installed" => is_installed(pkg),
+			         "latest"    => get_latest_ver(pkg),
+			       }
 end
 
 def get_latest_ver(pkg)
@@ -98,7 +69,7 @@ def get_latest_ver(pkg)
 
 	$html_lines.each do |line|
 		# Match the version number on the puppet html and pull that out.
-	  my_match = /href\="#{pkg}\-(\d\.\d\.\d)\.dmg"/.match(line)
+	  my_match = /href\="#{pkg}\-(\d\.\d\.\d)\-.*"/.match(line)
 	  if my_match
 	  	versions.push(my_match[1])
 	  end
@@ -110,55 +81,47 @@ def get_latest_ver(pkg)
 	return latest
 end
 
-def install_pkgs(pkgs, update)
-	# Install Puppet packages or update.  Default action is to install
-  # latest if there are no current versions, otherwise, it will not update
-  # unless '--update' is chosen. 
+def is_installed(pkg)
+  # Find out if package is installed
   # Params:
-  # +pkgs+:: Array of package hashes: [{app =>, current =>, latest =>}]
-  # +update+:: Boolean to force update or not
+  # +pkg+:: Package lookup
+  # Returns:
+  # +boolean+:: If installed or not
+  system("pkgutil --packages| grep '^com.puppetlabs.#{pkg}$'")
+end
 
-  # Logic to tell user what package update steps will be taken
-  if update
-    puts "Forcing update of all Puppet packages..."
-  end
+def install_pc1(pkg_name_prefix)
+	# Install Puppet all-in-one package.
+  # Params:
+  # +pkg_name_prefix+:: 
 
-  if !update
-    puts "Update not invoked.  Will leave present Puppet packages alone if present..."
-  end
-   
-  # Remove previous version before installation to avoid potential deletion 
-  # clobeering issues between packages
-	pkgs.each do |pkg|
-    if update && pkg["current"] != 0
-      puts "Force update of #{pkg["app"]} to version #{pkg["latest"]}."
-      puts "Removing #{pkg["app"]} version #{pkg["current"]}."
-      # HACK to clean up files from uninstall but retain configuration files.  
-      # Should revisit after all in one client is released.
-      system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg["app"]}| 
-             grep -v etc); do sudo rm /$f; done")
-      system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg["app"]} | 
-             grep #{pkg["app"]} | grep -v etc | tail -r); do sudo rmdir /$d; done")
-      system("pkgutil --forget com.puppetlabs.#{pkg["app"]}")
-    end
-    puts "\n"
-  end
-    
-  pkgs.each do |pkg|
-    if pkg["current"] == 0 || update
-    	puts "\nInstalling #{pkg["app"]}..."
-    	get_pkg(pkg["app"])
-    	system("hdiutil mount #{pkg["app"]}-latest.dmg")
+  puts "\nInstalling #{pkg_name_prefix}..."
+ 	system("hdiutil mount #{pkg_name_prefix}.dmg")
 
-    	puts "installing #{pkg["app"]}"
-    	system("installer -package /Volumes/#{pkg["app"]}-#{pkg["latest"]}/#{pkg["app"]}-#{pkg["latest"]}.pkg -target /")
+ 	system("installer -package /Volumes/#{pkg_name_prefix}/*installer.pkg -target /")
 
-    	puts "Cleaning up..."
-    	system("umount /Volumes/#{pkg["app"]}-#{pkg["latest"]}")
-      system("rm #{pkg["app"]}-latest.dmg")
-    end
-    puts "\n"
-  end
+ 	puts "Cleaning up..."
+ 	system("umount /Volumes/#{pkg_name_prefix}")
+  system("rm #{pkg_name_prefix}.dmg")
+  puts "\n"
+end
+
+def uninstall_pkg(pkg_hash)
+  # Forcibly remove a package from system.  Very hackish. 
+
+  # Skip this if not installed
+  return unless pkg_hash["installed"]
+
+  # Remove Puppet package from system.  Very hackish
+  puts "Removing #{pkg_hash["app"]}."
+  # HACK to clean up files from uninstall but retain configuration files.  
+  # Should revisit after all in one client is released.
+  system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg_hash["app"]}| 
+         grep -v etc); do sudo rm /$f; done")
+  system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg_hash["app"]} | 
+         grep #{pkg_hash["app"]} | grep -v etc | tail -r); do sudo rmdir /$d; done")
+  system("pkgutil --forget com.puppetlabs.#{pkg_hash["app"]}")
+  puts "\n"
 
 end
 
@@ -202,29 +165,46 @@ if __FILE__ == $0
     exit
   end
 
-  # Required vars
-  $puppet_modulepath = "/etc/puppet/modules"
+  $puppet_modulepath = "/opt/puppetlabs/puppet/modules"
   $module_name = "seteam_demostack"
   $module_path = "#{$puppet_modulepath}/#{$module_name}"
-  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/"
-  $pkgs = [ "facter", "hiera", "puppet" ]
+  $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/PC1/"
+  # This should be deprecated in subsequen version as PC1 becomes standard
+  $pkgs = [ "facter", "hiera", "puppet", "puppet-agent" ]
   $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
-
-  package_info = pkginfo($pkgs)
+  $installed_pkgs = []
+  $osx_ver = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
+  package_info = [] 
   options = parse_options()
 
-  puts "\n\nBootstrapping TSE environment..."
+  puts "\n\nBootstrapping Puppet Demo environment..."
   puts "Configuring environment for user #{options[:username]}"
   puts "Getting Puppet package info on system..."
 
-  # Install Puppet
-  puts "Checking current Puppet packages..."
-  install_pkgs(package_info, options[:update])
+  $pkgs.each do |pkg|
+    package_info.push(pkginfo(pkg))
+  end
+
+  puts package_info
+
+  puts "Installing/Updating Puppet packages..."
+  # Remove previous versions if requested
+  if options[:update]
+    package_info.each do |pkg|
+      uninstall_pkg(pkg)
+    end
+  end
+
+  # Install Puppet agent if requested or not currently installed
+  # Format is: appname- + version- + osx- + osx version- + arch + .dmg
+  pkg_name_prefix =  "puppet-agent-" + package_info[3]["latest"] + "-osx-" + $osx_ver + "-x86_64"
+  get_pc1(pkg_name_prefix) if !package_info[3]["installed"] || options[:update]
+  install_pc1(pkg_name_prefix) if !package_info[3]["installed"] || options[:update]
 
   # Set up Puppet directories and put manifests in place
   puts "\nSetting up Puppet environment..."
   config_puppet(options[:username])
 
   puts "\nInitiating Puppet run..."
-  system("puppet apply -e 'include #{$module_name}'")
+  system("/opt/puppetlabs/puppet/bin/puppet apply -e 'include #{$module_name}' --trace")
 end
