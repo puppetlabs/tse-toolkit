@@ -5,8 +5,6 @@
 #	the build.
 #
 # Version works for all in one package
-# DONE: Read website, download package
-# TO DO: All in one install
 
 require 'open-uri'
 require 'optparse'
@@ -87,7 +85,7 @@ def is_installed(pkg)
   # +pkg+:: Package lookup
   # Returns:
   # +boolean+:: If installed or not
-  system("pkgutil --packages| grep '^com.puppetlabs.#{pkg}$'")
+  system("pkgutil --packages| grep '^com.puppetlabs.#{pkg}$' 1>/dev/null")
 end
 
 def install_pc1(pkg_name_prefix)
@@ -116,13 +114,19 @@ def uninstall_pkg(pkg_hash)
   puts "Removing #{pkg_hash["app"]}."
   # HACK to clean up files from uninstall but retain configuration files.  
   # Should revisit after all in one client is released.
-  system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg_hash["app"]}| 
-         grep -v etc); do sudo rm /$f; done")
-  system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg_hash["app"]} | 
-         grep #{pkg_hash["app"]} | grep -v etc | tail -r); do sudo rmdir /$d; done")
+  if pkg_hash["app"] != "puppet-agent" # For old agents since this left files everywhere
+    system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg_hash["app"]}| 
+           grep -v etc); do sudo rm /$f; done")
+    system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg_hash["app"]} | 
+           grep #{pkg_hash["app"]} | grep -v etc | tail -r); do sudo rmdir /$d; done")
+  else # Should be all-in-one agent and cleaner to remove
+    system("rm -rf /opt/puppetlabs")
+    system("rm /usr/bin/facter") if File.exist?('/usr/bin/facter')
+    system("rm /usr/bin/hiera") if File.exist?('/usr/bin/hiera')
+    system("rm /usr/bin/puppet") if File.exist?('/usr/bin/puppet')
+  end
   system("pkgutil --forget com.puppetlabs.#{pkg_hash["app"]}")
   puts "\n"
-
 end
 
 def parse_options()
@@ -136,23 +140,40 @@ def parse_options()
   optparse = OptionParser.new do|opts|
 
 
-    opts.banner = "\nUsage: autodemo.rb -u|--username username\n\n"
-    options[:username] = ""
+    opts.banner = "\nUsage: autodemo.rb -u|--username username\n
+                   Note: default behavior is to install all-in-one agent if it isn't already 
+                   installed.  Also will leave older agent installs alone.  If you want to 
+                   update ONLY all-in-one agent, please choose '--update'.\n\n"
+    options[:username] = nil
     
     opts.on('-u', '--username USERNAME', "username is mandatory.") do|u|
       options[:username] = u
     end
 
-    opts.on('--update', "force update to latest versions of Puppet.") do
+    opts.on('--update', "Update Puppet all-in-one agent. Leave older installs alone.") do
       options[:update] = true
     end
 
+    opts.on('--nuclear', "Completely wipe out earlier Puppet installs and install latest agent.") do
+      options[:nuclear] = true
+    end
+
     opts.on_tail('-h', '--help') do
-      puts opts.banner
       puts opts
+      puts "\n\n"
       exit
     end
   end.parse!
+
+  if options[:nuclear] && options[:update]
+    puts "\n--nuclear and --update are mutually exclusive.  Please choose one or the other.\n\n"
+    exit
+  end
+
+  if !options[:username]
+    puts "\nA username (-u|--username USERNAME) is required!\n\n"
+    exit
+  end
 
   return options
 end
@@ -165,7 +186,7 @@ if __FILE__ == $0
     exit
   end
 
-  $puppet_modulepath = "/opt/puppetlabs/puppet/modules"
+  $puppet_modulepath = "/etc/puppetlabs/code/environments/production/modules/"
   $module_name = "seteam_demostack"
   $module_path = "#{$puppet_modulepath}/#{$module_name}"
   $puppet_url_prefix = "http://downloads.puppetlabs.com/mac/PC1/"
@@ -185,26 +206,25 @@ if __FILE__ == $0
     package_info.push(pkginfo(pkg))
   end
 
-  puts package_info
+  puts "Installing/Updating Puppet packages..." if !package_info[3]["installed"] || (options[:update] || options[:nuclear])
+  # Logic for different install options
+  # 
+  package_info.each do |pkg|
+    uninstall_pkg(pkg)
+  end if options[:nuclear]
 
-  puts "Installing/Updating Puppet packages..."
-  # Remove previous versions if requested
-  if options[:update]
-    package_info.each do |pkg|
-      uninstall_pkg(pkg)
-    end
-  end
+  uninstall_pkg(package_info[3]) if options[:update]
 
   # Install Puppet agent if requested or not currently installed
   # Format is: appname- + version- + osx- + osx version- + arch + .dmg
   pkg_name_prefix =  "puppet-agent-" + package_info[3]["latest"] + "-osx-" + $osx_ver + "-x86_64"
-  get_pc1(pkg_name_prefix) if !package_info[3]["installed"] || options[:update]
-  install_pc1(pkg_name_prefix) if !package_info[3]["installed"] || options[:update]
+  get_pc1(pkg_name_prefix) if !package_info[3]["installed"] || (options[:update] || options[:nuclear])
+  install_pc1(pkg_name_prefix) if !package_info[3]["installed"] || (options[:update] || options[:nuclear])
 
   # Set up Puppet directories and put manifests in place
   puts "\nSetting up Puppet environment..."
   config_puppet(options[:username])
 
   puts "\nInitiating Puppet run..."
-  system("/opt/puppetlabs/puppet/bin/puppet apply -e 'include #{$module_name}' --trace")
+  system("/opt/puppetlabs/puppet/bin/puppet apply -e 'include #{$module_name}'")
 end

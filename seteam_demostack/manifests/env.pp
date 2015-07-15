@@ -1,6 +1,10 @@
 class seteam_demostack::env (
   $user = $seteam_demostack::params::user
 ) inherits seteam_demostack::params {
+
+  include wget
+
+  $puppet_bins = [ 'facter', 'hiera', 'puppet' ]
   
   user { $user: 
     ensure      => 'present',
@@ -10,11 +14,33 @@ class seteam_demostack::env (
     home        => "/Users/${user}",
   }
 
-  # Hack since Puppet managehomedir for Mac doesn't work
+  # Workaround since Puppet managehomedir for Mac doesn't work
   file { "/Users/${user}":
     ensure      => 'directory',
-    subscribe   => User[$user],
     owner       => $user,
     group       => 'staff',
+    require     => User[$user],
   }
+
+  file { "/Users/${user}/vagrant_seteam_demostack":
+    ensure  => 'directory',
+    owner   => $user,
+    group   => 'staff',
+    require => File["/Users/${user}"],
+  }
+
+  wget::fetch { 'https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/seteam-vagrant-latest.tar.gz':
+    destination => '/Users/${user}/vagrant_seteam_demostack',
+    cache_dir    => '/Users/${user}/Downloads',
+  }
+
+#  $puppet_bins.each |String $puppet_bin| {
+#    file { "/usr/bin/${puppet_bin}": 
+#      ensure => 'link',
+#      target => "/opt/puppetlabs/puppet/bin/$puppet_bin",
+#      owner  => 'root',
+#      group  => 'wheel',
+#      mode   => '0755',
+#    }
+#  }
 }
