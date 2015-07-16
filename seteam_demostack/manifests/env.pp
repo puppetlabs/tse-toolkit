@@ -2,9 +2,10 @@ class seteam_demostack::env (
   $user = $seteam_demostack::params::user
 ) inherits seteam_demostack::params {
 
-  include wget
+  # include wget
 
   $puppet_bins = [ 'facter', 'hiera', 'puppet' ]
+  $demostack_tarball = 'seteam-vagrant-latest.tar.gz'
   
   user { $user: 
     ensure      => 'present',
@@ -29,9 +30,14 @@ class seteam_demostack::env (
     require => File["/Users/${user}"],
   }
 
-  wget::fetch { 'https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/seteam-vagrant-latest.tar.gz':
-    destination => '/Users/${user}/vagrant_seteam_demostack',
-    cache_dir    => '/Users/${user}/Downloads',
+  #wget::fetch { 'https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/seteam-vagrant-latest.tar.gz':
+  #  destination => '/Users/${user}/vagrant_seteam_demostack',
+  #  cache_dir    => '/Users/${user}/Downloads',
+  #}
+
+  exec { 'curl_demostack':
+    command => "/usr/bin/curl https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/${demostack_tarball}\
+                -o /Users/${user}/Downloads/${demostack_tarball}", 
   }
 
 #  $puppet_bins.each |String $puppet_bin| {
