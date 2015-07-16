@@ -23,7 +23,7 @@ class seteam_demostack::env (
     require     => User[$user],
   }
 
-  file { "/Users/${user}/vagrant_seteam_demostack":
+  file { [ "/Users/${user}/vagrant_seteam_demostack", "/Users/${user}/Downloads" ]:
     ensure  => 'directory',
     owner   => $user,
     group   => 'staff',
