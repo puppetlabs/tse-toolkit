@@ -22,7 +22,7 @@ def config_puppet(username)
 
   FileUtils.cp_r($module_name, $puppet_modulepath)
   
-  FileUtils.chown_R("puppet", "puppet", $module_path)
+  # FileUtils.chown_R("puppet", "puppet", $module_path)
 
   params_file = "#{$module_path}/manifests/params.pp"
   params_text = File.read(params_file)
