@@ -9,7 +9,7 @@ class seteam_demostack::params {
 
   # Vagrant stuff
   $vagrant_version = '1.7.4' 
-  $vagrant_plugins = [ 'oscar', 'vagrant-multiprovider-snap', 'vagrant-reload']
+  $vagrant_plugins = [ 'oscar', 'vagrant-hosts', 'vagrant-multiprovider-snap', 'vagrant-reload']
 
   $packages = [ "Vagrant_${vagrant_version}", 
                 "VirtualBox-${vbox_version}-${vbox_patch_level}"]
