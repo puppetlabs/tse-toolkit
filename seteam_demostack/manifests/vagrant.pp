@@ -18,7 +18,7 @@ class seteam_demostack::vagrant(
     command => "/bin/rm /var/db/.puppet_pkgdmg_installed_Vagrant*",
     onlyif  => [
                 "/bin/test -f /var/db/.puppet_pkgdmg_installed_Vagrant*",
-                "/bin/test ! -f /usr/bin/vagrant"
+                "/bin/test ! -f /usr/local/bin/vagrant"
                ],
   }
 
