@@ -4,11 +4,11 @@ class seteam_demostack::params {
   $user = 'username'
   
   # Virtual Box stuff
-  $vbox_version = '4.3.28'
-  $vbox_patch_level = '100309'
+  $vbox_version = '5.0.0'
+  $vbox_patch_level = '101573'
 
   # Vagrant stuff
-  $vagrant_version = '1.7.2' 
+  $vagrant_version = '1.7.4' 
   $vagrant_plugins = [ 'oscar', 'vagrant-multiprovider-snap', 'vagrant-reload']
 
   $packages = [ "Vagrant_${vagrant_version}", 
