@@ -37,8 +37,8 @@ class seteam_demostack::vagrant(
 
   $plugins.each |String $plugin| {
     exec { "vagrant_plugin_${plugin}":
-      command => "/usr/bin/su - ${user} -c '/usr/bin/vagrant plugin install ${plugin}'",
-      unless  => "/usr/bin/su - ${user} -c '/usr/bin/vagrant plugin list | grep ${plugin}'",
+      command => "/usr/bin/su - ${user} -c '/usr/local/bin/vagrant plugin install ${plugin}'",
+      unless  => "/usr/bin/su - ${user} -c '/usr/local/bin/vagrant plugin list | grep ${plugin}'",
       require => File["/Users/${user}/.vagrant.d"],
     }
   }
