@@ -36,8 +36,9 @@ class seteam_demostack::env (
   #}
 
   exec { 'curl_demostack':
-    command => "/usr/bin/curl https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/${demostack_tarball}\
-                -o /Users/${user}/Downloads/${demostack_tarball}", 
+    command => "/usr/bin/su - ${user} -c '/usr/bin/curl https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/${demostack_tarball}\
+                -o /Users/${user}/Downloads/${demostack_tarball}'", 
+    unless  => "/bin/test -f /Users/${user}/Downloads/${demostack_tarball}",
   }
 
 #  $puppet_bins.each |String $puppet_bin| {

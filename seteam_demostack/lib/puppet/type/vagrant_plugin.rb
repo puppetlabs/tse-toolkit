@@ -21,6 +21,7 @@ Puppet::Type.newtype(:vagrant_plugin) do
   end
 
   newparam :user do
+    # isnamevar
     defaultto(Facter.value(:boxen_user) || 'root')
   end
 
@@ -42,7 +43,7 @@ Puppet::Type.newtype(:vagrant_plugin) do
     begin
       %W(#{Etc.getpwnam(self[:user]).dir}/.vagrant.d/license-#{self[:name]}.lic)
     rescue
-      puts "Homedir for :user doesn't exist, will try continuing..."
+      puts "Homedir for #{self[:user]} doesn't exist, will try continuing..."
     end
   end
 end
