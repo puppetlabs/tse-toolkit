@@ -30,24 +30,10 @@ class seteam_demostack::env (
     require => File["/Users/${user}"],
   }
 
-  #wget::fetch { 'https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/seteam-vagrant-latest.tar.gz':
-  #  destination => '/Users/${user}/vagrant_seteam_demostack',
-  #  cache_dir    => '/Users/${user}/Downloads',
-  #}
-
   exec { 'curl_demostack':
     command => "/usr/bin/su - ${user} -c '/usr/bin/curl https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/${demostack_tarball}\
                 -o /Users/${user}/Downloads/${demostack_tarball}'", 
     unless  => "/bin/test -f /Users/${user}/Downloads/${demostack_tarball}",
   }
 
-#  $puppet_bins.each |String $puppet_bin| {
-#    file { "/usr/bin/${puppet_bin}": 
-#      ensure => 'link',
-#      target => "/opt/puppetlabs/puppet/bin/$puppet_bin",
-#      owner  => 'root',
-#      group  => 'wheel',
-#      mode   => '0755',
-#    }
-#  }
 }
