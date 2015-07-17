@@ -35,15 +35,15 @@ class seteam_demostack::vagrant(
     require => Package["Vagrant_${version}"],
   }
 
-  $plugins.each |String $plugin| {
-    exec { "vagrant_plugin_${plugin}":
-      command => "/usr/bin/su - ${user} -c '/usr/bin/vagrant plugin install ${plugin}'",
-      unless  => "/usr/bin/su - ${user} -c '/usr/bin/vagrant plugin list | grep ${plugin}'",
-      require => File["/Users/${user}/.vagrant.d"],
-    }
-  }
-#  seteam_demostack::vagrant_plugin { $plugins:
-#    ensure => present,
-#    require  => Package[ "Vagrant_${version}"],
+#  $plugins.each |String $plugin| {
+#    exec { "vagrant_plugin_${plugin}":
+#      command => "/usr/bin/su - ${user} -c '/usr/bin/vagrant plugin install ${plugin}'",
+#      unless  => "/usr/bin/su - ${user} -c '/usr/bin/vagrant plugin list | grep ${plugin}'",
+#      require => File["/Users/${user}/.vagrant.d"],
+#    }
 #  }
+  seteam_demostack::vagrant_plugin { $plugins:
+    ensure => present,
+    require  => Package[ "Vagrant_${version}"],
+  }
 }
