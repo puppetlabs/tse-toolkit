@@ -42,8 +42,4 @@ class seteam_demostack::vagrant(
       require => File["/Users/${user}/.vagrant.d"],
     }
   }
-#  seteam_demostack::vagrant_plugin { $plugins:
-#    ensure => present,
-#    require  => Package[ "Vagrant_${version}"],
-#  }
 }
