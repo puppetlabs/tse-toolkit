@@ -1,3 +1,4 @@
+# Basic setup of user account and home directory
 class seteam_demostack::env (
   $user = $seteam_demostack::params::user
 ) inherits seteam_demostack::params {

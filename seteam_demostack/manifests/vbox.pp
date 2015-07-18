@@ -14,21 +14,10 @@ class seteam_demostack::vbox (
     refreshonly => true,
   }
 
-  # On OS X, Puppet leaves behind a file to 'know' it installed something, this cleans
-  # it up. 
-  exec { 'clean-vbox-install':
-    command => "/bin/rm /var/db/.puppet_pkgdmg_installed_VirtualBox*",
-    onlyif  => [
-                "/bin/test -f /var/db/.puppet_pkgdmg_installed_VirtualBox*",
-                "/bin/test ! -d /Applications/VirtualBox.app/"
-               ],
-  }
-    
   package { "VirtualBox-${version}-${patch_level}":
     ensure   => present,
     provider => 'pkgdmg',
     source   => "http://download.virtualbox.org/virtualbox/${version}/VirtualBox-${version}-${patch_level}-OSX.dmg",
     require  => Exec['Kill Virtual Box Processes'],
   }
-
 }

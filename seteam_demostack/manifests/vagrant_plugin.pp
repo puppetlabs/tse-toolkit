@@ -7,11 +7,7 @@
 #   seteam_demostack::plugin { 'boxen': ensure => absent }
 
 define seteam_demostack::vagrant_plugin(
-  $ensure  = 'present',
-  $force   = false,
   $license = undef,
-  $version = latest,
-  $prefix  = true,
   $user    = $seteam_demostack::params::user
 ) {
   include seteam_demostack::params
@@ -26,9 +22,8 @@ define seteam_demostack::vagrant_plugin(
     }
   }
 
-  vagrant_plugin { $plugin_name:
-    ensure  => $ensure,
-    version => $version,
-    user    => $user,
+  exec { "vagrant_plugin_${name}":
+    command => "/usr/bin/su - ${user} -c '/usr/local/bin/vagrant plugin install ${name}'",
+    unless  => "/usr/bin/su - ${user} -c '/usr/local/bin/vagrant plugin list | grep ${name}'",
   }
 }

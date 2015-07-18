@@ -9,18 +9,7 @@ class seteam_demostack::vagrant(
   $version = $seteam_demostack::params::vagrant_version,
   $plugins = $seteam_demostack::params::vagrant_plugins,
   $user = $seteam_demostack::params::user,
-  $completion = false
 ) inherits seteam_demostack::params {
-
-  # On OS X, Puppet leaves behind a file to 'know' it installed something, this cleans
-  # it up. 
-  exec { "clean-vagrant":
-    command => "/bin/rm /var/db/.puppet_pkgdmg_installed_Vagrant*",
-    onlyif  => [
-                "/bin/test -f /var/db/.puppet_pkgdmg_installed_Vagrant*",
-                "/bin/test ! -f /usr/local/bin/vagrant"
-               ],
-  }
 
   package { "Vagrant_${version}":
     ensure   => installed,
@@ -35,11 +24,7 @@ class seteam_demostack::vagrant(
     require => Package["Vagrant_${version}"],
   }
 
-  $plugins.each |String $plugin| {
-    exec { "vagrant_plugin_${plugin}":
-      command => "/usr/bin/su - ${user} -c '/usr/local/bin/vagrant plugin install ${plugin}'",
-      unless  => "/usr/bin/su - ${user} -c '/usr/local/bin/vagrant plugin list | grep ${plugin}'",
-      require => File["/Users/${user}/.vagrant.d"],
-    }
+  seteam_demostack::vagrant_plugin { $plugins:
+    require  => File["/Users/${user}/.vagrant.d"],
   }
 }
