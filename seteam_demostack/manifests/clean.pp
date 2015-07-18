@@ -1,5 +1,5 @@
 # On OS X, Puppet leaves behind a file to 'know' it installed something, this cleans
-# it up. 
+# it up, before determining whether or not to install.
 class seteam_demostack::clean(
 ) inherits seteam_demostack::params {
   exec { 'clean-vagrant-install':
