@@ -3,11 +3,10 @@
 # Usage:
 #   
 #   include virtualbox
-class seteam_demostack::vbox (
-  $version = $seteam_demostack::params::vbox_version,
-  $patch_level = $seteam_demostack::params::vbox_patch_level
-) inherits seteam_demostack::params {
-
+class tse_toolkit::vbox (
+  $version,
+  $patch_level,
+) { 
   exec { 'Kill Virtual Box Processes':
     command     => 'pkill "VBoxXPCOMIPCD" || true && pkill "VBoxSVC" || true && pkill "VBoxHeadless" || true',
     path        => '/usr/bin:/usr/sbin:/bin:/usr/local/bin',

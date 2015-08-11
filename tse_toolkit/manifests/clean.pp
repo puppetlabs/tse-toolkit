@@ -1,7 +1,6 @@
 # On OS X, Puppet leaves behind a file to 'know' it installed something, this cleans
 # it up, before determining whether or not to install.
-class seteam_demostack::clean(
-) inherits seteam_demostack::params {
+class tse_toolkit::clean {
   exec { 'clean-vagrant-install':
     command => "/bin/rm /var/db/.puppet_pkgdmg_installed_Vagrant*",
     onlyif  => [

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-#	Install/bootstrap script for seteam_demobuild package.  Script will setup
+#	Install and bootstrap script for tse_toolkit.  Script will setup
 #	Puppet environment on Mac, and kick off a Puppet run to complete rest of
 #	the build.
 #
@@ -172,7 +172,7 @@ if __FILE__ == $PROGRAM_NAME
   end
 
   $puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
-  $module_name = 'seteam_demostack'
+  $module_name = 'tse_toolkit'
   $module_path = "#{$puppet_modulepath}/#{$module_name}"
   $puppet_url_prefix = 'http://downloads.puppetlabs.com/mac/PC1/'
   $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']

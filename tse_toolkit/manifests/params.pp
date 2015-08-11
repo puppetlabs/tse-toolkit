@@ -1,4 +1,4 @@
-class seteam_demostack::params {
+class tse_toolkit::params {
 
   # demobuild.rb should populate this stuff
   $user = 'username'

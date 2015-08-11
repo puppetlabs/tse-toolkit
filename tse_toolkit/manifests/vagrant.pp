@@ -5,12 +5,11 @@
 #
 #   include vagrant
 
-class seteam_demostack::vagrant(
-  $version = $seteam_demostack::params::vagrant_version,
-  $plugins = $seteam_demostack::params::vagrant_plugins,
-  $user = $seteam_demostack::params::user,
-) inherits seteam_demostack::params {
-
+class tse_toolkit::vagrant(
+  $version,
+  $plugins,
+  $user,
+) {
   package { "Vagrant_${version}":
     ensure   => installed,
     source   => "https://dl.bintray.com/mitchellh/vagrant/vagrant_${version}.dmg",
@@ -24,7 +23,8 @@ class seteam_demostack::vagrant(
     require => Package["Vagrant_${version}"],
   }
 
-  seteam_demostack::vagrant_plugin { $plugins:
+  tse_toolkit::vagrant_plugin { $plugins:
     require  => File["/Users/${user}/.vagrant.d"],
+    user     => $user,
   }
 }

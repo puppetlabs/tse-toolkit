@@ -1,11 +1,8 @@
 # Basic setup of user account and home directory
-class seteam_demostack::env (
-  $user = $seteam_demostack::params::user
-) inherits seteam_demostack::params {
+class tse_toolkit::env (
+  $user,
+) {
 
-  # include wget
-
-  $puppet_bins = [ 'facter', 'hiera', 'puppet' ]
   $demostack_tarball = 'seteam-vagrant-latest.tar.gz'
   
   user { $user: 
@@ -24,7 +21,7 @@ class seteam_demostack::env (
     require     => User[$user],
   }
 
-  file { [ "/Users/${user}/vagrant_seteam_demostack", "/Users/${user}/Downloads" ]:
+  file { [ "/Users/${user}/vagrant_tse_toolkit", "/Users/${user}/Downloads" ]:
     ensure  => 'directory',
     owner   => $user,
     group   => 'staff',
