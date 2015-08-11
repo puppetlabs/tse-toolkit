@@ -176,7 +176,7 @@ if __FILE__ == $PROGRAM_NAME
   $puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
   $module_name = 'tse_toolkit'
   $module_path = "#{$puppet_modulepath}/#{$module_name}"
-  $module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/namespace-change-tse_toolkit/tse_toolkit.tar.gz'
+  $module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/tse_toolkit.tar.gz'
   $puppet_url_prefix = 'http://downloads.puppetlabs.com/mac/PC1/'
   $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']
   $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
