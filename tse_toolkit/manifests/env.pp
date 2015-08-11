@@ -39,7 +39,7 @@ class tse_toolkit::env (
 
   exec { 'curl_demostack':
     command => "/usr/bin/su - ${user} -c '/usr/bin/curl ${pe_demo_url}\
-                -o ${download_path}/${demostack_tarball}'", 
+                -o ${downloads_path}/${demostack_tarball}'", 
     before  => Exec['extract_tarball']
     #unless  => "/bin/test -f /Users/${user}/vagrant_tse_demo_envs/${demostack_tarball}",
   }
