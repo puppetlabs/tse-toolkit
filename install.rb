@@ -20,7 +20,7 @@ def config_puppet(username)
   FileUtils.cp_r($module_name, $puppet_modulepath)
   params_file = "#{$module_path}/manifests/params.pp"
   params_text = File.read(params_file)
-  params_update = params_text.gsub(/\$user\ \=\ .*/, "$user = '#{username}'")
+  params_update = params_text.gsub(/\$user\s+ \=\ .*/, "$user = '#{username}'")
   File.open(params_file, 'w') { |file| file.puts params_update }
 end
 

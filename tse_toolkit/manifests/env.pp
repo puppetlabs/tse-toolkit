@@ -1,10 +1,13 @@
 # Basic setup of user account and home directory
 class tse_toolkit::env (
   $user,
+  $pe_demo_url
 ) {
 
-  $demostack_tarball = 'seteam-vagrant-latest.tar.gz'
-  
+  $demostack_tarball = 'pe-demo-latest.tar.gz'
+  $demostack_path    = "/Users/${user}/vagrant_tse_demos"
+  $downloads_path    = "/Users/${user}/Downloads"
+
   user { $user: 
     ensure      => 'present',
     groups      => ['_appserveradm', '_appserverusr', '_lpadmin', 'admin'],
@@ -21,17 +24,29 @@ class tse_toolkit::env (
     require     => User[$user],
   }
 
-  file { [ "/Users/${user}/vagrant_tse_toolkit", "/Users/${user}/Downloads" ]:
+  file { [ "${demostack_path}", "/Users/${user}/Downloads" ]:
     ensure  => 'directory',
     owner   => $user,
     group   => 'staff',
     require => File["/Users/${user}"],
   }
 
+  exec { 'clean': 
+    command => "/bin/rm ${download_path}/${demostack_tarball}",
+    onlyif  => "/bin/test -f ${download_path}/${demostack_tarball}",
+    before  => Exec['curl_demostack'],
+  }
+
   exec { 'curl_demostack':
-    command => "/usr/bin/su - ${user} -c '/usr/bin/curl https://s3-us-west-2.amazonaws.com/tse-builds/seteam-vagrant/${demostack_tarball}\
-                -o /Users/${user}/Downloads/${demostack_tarball}'", 
-    unless  => "/bin/test -f /Users/${user}/Downloads/${demostack_tarball}",
+    command => "/usr/bin/su - ${user} -c '/usr/bin/curl ${pe_demo_url}\
+                -o ${download_path}/${demostack_tarball}'", 
+    before  => Exec['extract_tarball']
+    #unless  => "/bin/test -f /Users/${user}/vagrant_tse_demo_envs/${demostack_tarball}",
+  }
+
+  exec { 'extract_tarball':
+    command => "/usr/bin/su - ${user} -c '/usr/bin/tar xzf ${download_path}/${demostack_tarball}\
+               -C ${demostack_path}'",
   }
 
 }

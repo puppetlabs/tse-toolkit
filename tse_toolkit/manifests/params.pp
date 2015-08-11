@@ -1,13 +1,12 @@
 class tse_toolkit::params {
 
-  # demobuild.rb should populate this stuff
-  $user = 'username'
+  $user           = 'username'
+  $pe_version     = '2015.2.x'
+  $pe_demo_url    = "http://tse-builds.s3-us-west-2.amazonaws.com/${pe_version}/releases/pe-demo-latest.tar.gz"
   
-  # Virtual Box stuff
-  $vbox_version = '5.0.0'
+  $vbox_version     = '5.0.0'
   $vbox_patch_level = '101573'
 
-  # Vagrant stuff
   $vagrant_version = '1.7.4' 
   $vagrant_plugins = [ 'oscar', 'vagrant-hosts', 'vagrant-multiprovider-snap', 'vagrant-reload']
 
