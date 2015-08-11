@@ -32,8 +32,8 @@ class tse_toolkit::env (
   }
 
   exec { 'clean': 
-    command => "/bin/rm ${download_path}/${demostack_tarball}",
-    onlyif  => "/bin/test -f ${download_path}/${demostack_tarball}",
+    command => "/bin/rm ${downloads_path}/${demostack_tarball}",
+    onlyif  => "/bin/test -f ${downloads_path}/${demostack_tarball}",
     before  => Exec['curl_demostack'],
   }
 
@@ -45,7 +45,7 @@ class tse_toolkit::env (
   }
 
   exec { 'extract_tarball':
-    command => "/usr/bin/su - ${user} -c '/usr/bin/tar xzf ${download_path}/${demostack_tarball}\
+    command => "/usr/bin/su - ${user} -c '/usr/bin/tar xzf ${downloads_path}/${demostack_tarball}\
                -C ${demostack_path}'",
   }
 
