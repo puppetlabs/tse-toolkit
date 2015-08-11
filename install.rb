@@ -17,7 +17,9 @@ def config_puppet(username)
   # +username+:: user account name that will be placed in params.pp
 
   FileUtils.mkdir_p($puppet_modulepath) unless File.directory?($puppet_modulepath)
-  FileUtils.cp_r($module_name, $puppet_modulepath)
+  system("curl  #{$module_tarball_url} -o /private/tmp/#{$module_name}.tar.gz")
+  system("tar xzf /private/tmp/#{$module_name}.tar.gz -C /private/tmp")
+  FileUtils.cp_r("/private/tmp/#{$module_name}", $puppet_modulepath)
   params_file = "#{$module_path}/manifests/params.pp"
   params_text = File.read(params_file)
   params_update = params_text.gsub(/\$user\s+ \=\ .*/, "$user = '#{username}'")
@@ -174,6 +176,7 @@ if __FILE__ == $PROGRAM_NAME
   $puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
   $module_name = 'tse_toolkit'
   $module_path = "#{$puppet_modulepath}/#{$module_name}"
+  $module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/namespace-change-tse_toolkit/tse_toolkit.tar.gz'
   $puppet_url_prefix = 'http://downloads.puppetlabs.com/mac/PC1/'
   $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']
   $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
