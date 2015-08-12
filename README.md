@@ -1,17 +1,20 @@
 # seteam-demostack
-Bootstrap TSE demo environment on (mostly) clean Mac OS X box. Ruby script (autodemo.rb) will pull
+Bootstrap TSE demo environment on (mostly) Mac OSX. Ruby script (install.rb) will pull
 down necessary bits and packages to build base environment needed to bootstrap rest of TSE demo
 stack (Puppet client binaries and requisite code).
 
 Forked code from boxen project is included as Puppet types and providers but are not currently being
 used.  This will likely be removed from future versions.
 
-## Installation
-Just clone this git repo somewhere onto your OS X box :).
+## Installation/Usage
+Run this:
 
-## Usage
+```
+curl -s https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/install.rb | sudo ruby /dev/stdin --username <user>
+```
 
-You're probably most interested in just running the thing, so here's how to do it.
+
+## Detailed Usage
 
 If you're running VirtualBox currently, power off your VMs first before running this.  It's best if you 
 remove old versions of VirtualBox as well since package management on OS X is a little lacking and 
@@ -21,13 +24,12 @@ that will basically undo everything this package does.  Please be careful with t
 to remove a user account and not much error checking.  The script will call the Vagrant and VirtualBox 
 uninstall scripts as a part of its process.
 
-Run the Ruby script as root as provide a username: ```sudo ./bootstrap_demostack.rb --username <user>```
 
 Changes to versions, Vagrant plugins and other params should be done in provided params.pp which is located in
 $modulesdir/seteam_demostack/manifests/params.pp
 
 ```
-Usage: autodemo.rb -u|--username username
+Usage: install.rb -u|--username username
 
                    Note: default behavior is to install all-in-one agent if it isn't already
                    installed.  Also will leave older agent installs alone.  If you want to
