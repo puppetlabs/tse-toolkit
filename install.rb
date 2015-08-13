@@ -122,18 +122,18 @@ def parse_options
   # Use optparse to get options
   # Returns:
   # +options+:: Command line arguments
-
-  ARGV << '-h' if ARGV.empty? # autodisplay help banner if no options
   options = {}
   options[:update] = false
+  options[:username] = `logname`.chomp # default to user login name
+  
+
   OptionParser.new do|opts|
-    opts.banner = "\nUsage: autodemo.rb -u|--username username\n
+    opts.banner = "\nUsage: sudo ./install.rb\n
                    Note: default behavior is to install all-in-one agent if it isn't already
                    installed.  Also will leave older agent installs alone.  If you want to
                    update ONLY all-in-one agent, please choose '--update'.\n\n"
-    options[:username] = nil
 
-    opts.on('-u', '--username USERNAME', 'username is mandatory.') do|u|
+    opts.on('-u', '--username USERNAME', 'username defaults to currently logged in user.') do|u|
       options[:username] = u
     end
 
@@ -150,15 +150,17 @@ def parse_options
       puts "\n\n"
       exit
     end
+
+    if ENV['USER'] != 'root'
+      puts "\nTHIS SCRIPT SHOULD BE RUN AS root OR VIA sudo.  Exiting...\n"
+      puts opts
+      puts "\n\n"
+      exit
+    end
   end.parse!
 
   if options[:nuclear] && options[:update]
     puts "\n--nuclear and --update are mutually exclusive.  Please choose one or the other.\n\n"
-    exit
-  end
-
-  unless options[:username]
-    puts "\nA username (-u|--username USERNAME) is required!\n\n"
     exit
   end
 
@@ -167,11 +169,6 @@ end
 
 # MAIN
 if __FILE__ == $PROGRAM_NAME
-
-  if ENV['USER'] != 'root'
-    puts "\nThis script should be run as root.  Exiting...\n\n"
-    exit
-  end
 
   $puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
   $module_name = 'tse_toolkit'
