@@ -10,7 +10,7 @@ used.  This will likely be removed from future versions.
 Run this:
 
 ```
-curl -s https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/install.rb | sudo ruby
+curl -sL http://git.io/tse-toolkit | sudo ruby
 ```
 That will install latest stable release of the demostack to your local user account.  Command options are
 detailed below.
