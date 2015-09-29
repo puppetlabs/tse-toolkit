@@ -198,7 +198,10 @@ if __FILE__ == $PROGRAM_NAME
 
   # Install Puppet agent if requested or not currently installed
   # Format is: appname- + version- + osx- + osx version- + arch + .dmg
-  pkg_name_prefix =  'puppet-agent-' + package_info[3]['latest'] + '-osx-' + osx_ver + '-x86_64'
+  #
+  # HACK until naming of PC1 packages gets reverted to sane value
+  # pkg_name_prefix =  'puppet-agent-' + package_info[3]['latest'] + '-osx-' + osx_ver + '-x86_64'
+  pkg_name_prefix = 'puppet-agent-1.2.4-1.yosemite'
   get_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
   install_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
 
