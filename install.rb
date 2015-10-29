@@ -204,7 +204,7 @@ if __FILE__ == $PROGRAM_NAME
   pkg_name_prefix = 'puppet-agent-1.2.4-1.yosemite'
   get_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
   install_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
-
+  sleep(5)
   # Set up Puppet directories and put manifests in place
   puts "\nSetting up Puppet environment..."
   config_puppet(options[:username])
