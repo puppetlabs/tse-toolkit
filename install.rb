@@ -104,9 +104,9 @@ def uninstall_pkg(pkg_hash)
   # HACK: to clean up files from uninstall but retain configuration files.
   # Should revisit after all in one client is released.
   if pkg_hash['app'] != 'puppet-agent' # For old agents since this left files everywhere
-    system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg_hash['app']}| 
+    system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg_hash['app']}|
            grep -v etc); do sudo rm /$f; done")
-    system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg_hash['app']} | 
+    system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg_hash['app']} |
            grep #{pkg_hash['app']} | grep -v etc | tail -r); do sudo rmdir /$d; done")
   else # Should be all-in-one agent and cleaner to remove
     system('rm -rf /opt/puppetlabs')
@@ -125,7 +125,7 @@ def parse_options
   options = {}
   options[:update] = false
   options[:username] = `logname`.chomp # default to user login name
-  
+
 
   OptionParser.new do|opts|
     opts.banner = "\nUsage: sudo ./install.rb\n
