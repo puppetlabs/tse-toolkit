@@ -12,7 +12,7 @@ class tse_toolkit::vagrant(
 ) {
   package { "Vagrant_${version}":
     ensure   => installed,
-    source   => "https://dl.bintray.com/mitchellh/vagrant/vagrant_${version}.dmg",
+    source   => "https://releases.hashicorp.com/vagrant/${version}/vagrant_${version}.dmg",
     provider => 'pkgdmg',
   }
 
