@@ -1,7 +1,7 @@
 class tse_toolkit::params {
 
   $user           = 'username'
-  $pe_version     = '2015.3.1'
+  $pe_version     = '2015.3.x'
   $pe_demo_url    = "http://tse-builds.s3-us-west-2.amazonaws.com/${pe_version}/releases/pe-demo-latest.tar.gz"
 
   $vbox_version     = '5.0.12'
