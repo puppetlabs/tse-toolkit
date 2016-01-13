@@ -21,7 +21,7 @@ class tse_toolkit::vbox (
   }
 
   exec { 'curl vbox extension':
-    command => "/usr/bin/curl http://download.virtualbox.org/virtualbox/${version}/Oracle_VM_VirtualBox_Extension_Pack-${versions}-${patch_level}.vbox-extpack -o /tmp/Oracle_VM_VirtualBox_Extension_Pack-${version}-${patch_level}.vbox-extpack",
+    command => "/usr/bin/curl http://download.virtualbox.org/virtualbox/${version}/Oracle_VM_VirtualBox_Extension_Pack-${version}-${patch_level}.vbox-extpack -o /tmp/Oracle_VM_VirtualBox_Extension_Pack-${version}-${patch_level}.vbox-extpack",
     unless  => '/usr/local/bin/VBoxManage list extpacks | grep true',
   }
 
