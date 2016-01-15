@@ -8,5 +8,5 @@ Updates:
 Improvements:
 
   - Installs relevant VirtualBox Extensions.
-  - Updates to Ruby script to download correct Puppet PC1 pacakge for OSX depending on 
+  - Updates to Ruby script to download correct Puppet PC1 package for OSX depending on 
     version it is being run on.
