@@ -48,8 +48,8 @@ with ```--update``` switch.  ```--nuclear``` forcibly removes ALL previous versi
 and Puppet-agent before installing the most recent Puppet-agent.
 
 Current Install List
-* puppet-agent 4.2.0
-* VirtualBox 5.0 build 101573
+* puppet-agent 
+* VirtualBox 5.0.12 build 104815
 * Vagrant 1.7.4
   * oscar
   * vagrant-multiprovider-snap
