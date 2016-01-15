@@ -32,7 +32,7 @@ def get_pc1(pkg_name_prefix)
   # +pkg_name_prefix+:: Name prefix of package to download
 
   File.open(pkg_name_prefix + '.dmg', 'wb') do |fo|
-    fo.write open($puppet_url_prefix + pkg_name_prefix + '.dmg').read
+    fo.write open($pc1_url + pkg_name_prefix + '.dmg').read
   end
 end
 
@@ -174,10 +174,10 @@ if __FILE__ == $PROGRAM_NAME
   $module_name = 'tse_toolkit'
   $module_path = "#{$puppet_modulepath}/#{$module_name}"
   $module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/tse_toolkit.tar.gz'
-  $puppet_url_prefix = 'http://downloads.puppetlabs.com/mac/PC1/'
   $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']
-  $html_lines = `curl --silent #{$puppet_url_prefix}`.split("\n")
   osx_ver = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
+  $pc1_url = 'http://downloads.puppetlabs.com/mac/' + osx_ver + '/PC1/x86_64/'
+  $html_lines = `curl --silent #{$pc1_url}`.split("\n")
   package_info = []
   options = parse_options
 
@@ -197,11 +197,8 @@ if __FILE__ == $PROGRAM_NAME
   uninstall_pkg(package_info[3]) if options[:update]
 
   # Install Puppet agent if requested or not currently installed
-  # Format is: appname- + version- + osx- + osx version- + arch + .dmg
   #
-  # HACK until naming of PC1 packages gets reverted to sane value
-  # pkg_name_prefix =  'puppet-agent-' + package_info[3]['latest'] + '-osx-' + osx_ver + '-x86_64'
-  pkg_name_prefix = 'puppet-agent-1.2.4-1.yosemite'
+  pkg_name_prefix =  'puppet-agent-' + package_info[3]['latest'] + '-1.osx' + osx_ver
   get_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
   install_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
 
