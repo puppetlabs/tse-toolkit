@@ -2,11 +2,13 @@
 
 ## 1.0.0 (2016-01-16)
 
-Updates: 
+Updates:
+
   - Update to VirtualBox version: 5.0.12
+  - Additional Vagrant plugin: vagrant-cachier
 
 Improvements:
 
   - Installs relevant VirtualBox Extensions.
-  - Updates to Ruby script to download correct Puppet PC1 package for OSX depending on 
-    version it is being run on.
+  - Updates to Ruby script to download correct Puppet PC1 package depending OSX version.
+  - Updates to PC1 URL reference in light of directory location changes by release team.
