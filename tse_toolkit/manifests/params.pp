@@ -7,8 +7,8 @@ class tse_toolkit::params {
   $vbox_version     = '5.0.12'
   $vbox_patch_level = '104815'
 
-  $vagrant_version = '1.7.4'
-  $vagrant_plugins = [ 'oscar', 'vagrant-hosts', 'vagrant-multiprovider-snap', 'vagrant-reload']
+  $vagrant_version = '1.7.4' 
+  $vagrant_plugins = [ 'oscar', 'vagrant-hosts', 'vagrant-multiprovider-snap', 'vagrant-reload', 'vagrant-cachier']
 
   $packages = [ "Vagrant_${vagrant_version}",
   "VirtualBox-${vbox_version}-${vbox_patch_level}"]
