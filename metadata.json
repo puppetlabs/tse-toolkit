@@ -1,0 +1,13 @@
+{
+  "name": "tse-toolkit",
+  "version": "0.9.0",
+  "author": "Puppet Labs TSE Team",
+  "summary": "Bootstrap TSE laptop/workstation utility",
+  "license": "Apache-2.0",
+  "source": "https://github.com/puppetlabs/tse-toolkit",
+  "project_page": "https://github.com/puppetlabs/tse-toolkit",
+  "issues_url": "https://github.com/puppetlabs/tse-toolkit/issues",
+  "dependencies": [
+  
+  ]
+}

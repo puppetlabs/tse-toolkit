@@ -10,7 +10,7 @@ used.  This will likely be removed from future versions.
 Run this:
 
 ```
-curl -sL http://git.io/tse-toolkit | sudo ruby
+curl -sL https://git.io/vwgq5 | sudo ruby
 ```
 That will install latest stable release of the demostack to your local user account.  Command options are
 detailed below.
