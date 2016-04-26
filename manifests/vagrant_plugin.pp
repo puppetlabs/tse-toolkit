@@ -1,4 +1,4 @@
-define tse_toolkit::vagrant_plugin(
+define toolkit::vagrant_plugin(
   $user,
 ) {
     

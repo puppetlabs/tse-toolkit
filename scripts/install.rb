@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-#	Install and bootstrap script for tse_toolkit.  Script will setup
+#	Install and bootstrap script for toolkit.  Script will setup
 #	install latest puppet-agent on Mac, install tse/nimbus, and run a
 # a configuration to bootstrap rest of environment.
 #
@@ -150,9 +150,9 @@ end
 if __FILE__ == $PROGRAM_NAME
 
   #$puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
-  #$module_name = 'tse_toolkit'
+  #$module_name = 'toolkit'
   #$module_path = "#{$puppet_modulepath}/#{$module_name}"
-  #$module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/tse_toolkit.tar.gz'
+  #$module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/toolkit.tar.gz'
   # Reference to older separate packages here for completeness. Deprecate soon.
   $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']
   osx_ver = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s

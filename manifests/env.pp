@@ -1,5 +1,5 @@
 # Basic setup of user account and home directory
-class tse_toolkit::env (
+class toolkit::env (
   $user,
   $pe_demo_url
 ) {

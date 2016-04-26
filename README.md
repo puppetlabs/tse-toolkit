@@ -26,7 +26,7 @@ to remove a user account and not much error checking.  The script will call the 
 uninstall scripts as a part of its process.
 
 Changes to versions, Vagrant plugins and other params should be done in provided params.pp which is located in
-$modulesdir/tse_toolkit/manifests/params.pp
+$modulesdir/toolkit/manifests/params.pp
 
 ```
 Usage: install.rb -u|--username username

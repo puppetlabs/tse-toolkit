@@ -1,4 +1,4 @@
-class tse_toolkit::params {
+class toolkit::params {
 
   $user           = 'username'
   $pe_version     = '2016.1.x'

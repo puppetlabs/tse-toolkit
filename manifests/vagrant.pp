@@ -5,7 +5,7 @@
 #
 #   include vagrant
 
-class tse_toolkit::vagrant(
+class toolkit::vagrant(
   $version,
   $plugins,
   $user,
@@ -23,7 +23,7 @@ class tse_toolkit::vagrant(
     require => Package["Vagrant_${version}"],
   }
 
-  tse_toolkit::vagrant_plugin { $plugins:
+  toolkit::vagrant_plugin { $plugins:
     require  => File["/Users/${user}/.vagrant.d"],
     user     => $user,
   }

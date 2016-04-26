@@ -3,7 +3,7 @@
 # Usage:
 #
 #   include virtualbox
-class tse_toolkit::vbox (
+class toolkit::vbox (
   $version,
   $patch_level,
 ) {
