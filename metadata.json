@@ -1,5 +1,5 @@
 {
-  "name": "tse-toolkit",
+  "name": "tse_toolkit",
   "version": "0.9.0",
   "author": "Puppet Labs TSE Team",
   "summary": "Bootstrap TSE laptop/workstation utility",
