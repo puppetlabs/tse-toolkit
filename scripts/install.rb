@@ -1,11 +1,9 @@
 #!/usr/bin/env ruby
 #
 #	Install and bootstrap script for tse_toolkit.  Script will setup
-#	Puppet environment on Mac, and kick off a Puppet run to complete rest of
-#	the build.
+#	install latest puppet-agent on Mac, install tse/nimbus, and run a
+# a configuration to bootstrap rest of environment.
 #
-# Version works for all in one package
-
 require 'open-uri'
 require 'optparse'
 require 'fileutils'
@@ -56,7 +54,6 @@ def get_latest_ver(pkg)
   # +pkg+:: Package to lookup
   # Returns:
   # +latest+:: Latest version of a package
-
   versions = []
 
   $html_lines.each do |line|
@@ -67,8 +64,6 @@ def get_latest_ver(pkg)
     end
   end
 
-  # This makes assumption that page maintainer is correctly ordering
-  # versions
   latest = versions[-1]
 end
 
@@ -98,7 +93,6 @@ end
 
 def uninstall_pkg(pkg_hash)
   # Forcibly remove a package from system.
-
   return unless pkg_hash['installed']
   puts "Removing #{pkg_hash['app']}."
   # HACK: to clean up files from uninstall but retain configuration files.
@@ -120,12 +114,10 @@ end
 
 def parse_options
   # Use optparse to get options
-  # Returns:
   # +options+:: Command line arguments
   options = {}
   options[:update] = false
   options[:username] = `logname`.chomp # default to user login name
-
 
   OptionParser.new do|opts|
     opts.banner = "\nUsage: sudo ./install.rb\n
@@ -135,14 +127,6 @@ def parse_options
 
     opts.on('-u', '--username USERNAME', 'username defaults to currently logged in user.') do|u|
       options[:username] = u
-    end
-
-    opts.on('--update', 'Update Puppet all-in-one agent. Leave older installs alone.') do
-      options[:update] = true
-    end
-
-    opts.on('--nuclear', 'Completely wipe out earlier Puppet installs and install latest agent.') do
-      options[:nuclear] = true
     end
 
     opts.on_tail('-h', '--help') do
@@ -159,21 +143,17 @@ def parse_options
     end
   end.parse!
 
-  if options[:nuclear] && options[:update]
-    puts "\n--nuclear and --update are mutually exclusive.  Please choose one or the other.\n\n"
-    exit
-  end
-
   options
 end
 
 # MAIN
 if __FILE__ == $PROGRAM_NAME
 
-  $puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
-  $module_name = 'tse_toolkit'
-  $module_path = "#{$puppet_modulepath}/#{$module_name}"
-  $module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/tse_toolkit.tar.gz'
+  #$puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
+  #$module_name = 'tse_toolkit'
+  #$module_path = "#{$puppet_modulepath}/#{$module_name}"
+  #$module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/tse_toolkit.tar.gz'
+  # Reference to older separate packages here for completeness. Deprecate soon.
   $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']
   osx_ver = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
   $pc1_url = 'http://downloads.puppetlabs.com/mac/' + osx_ver + '/PC1/x86_64/'
@@ -188,24 +168,24 @@ if __FILE__ == $PROGRAM_NAME
     package_info.push(pkginfo(pkg))
   end
 
-  puts 'Installing/Updating Puppet packages...' if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
-
+  # Remove all Puppet agent packages
+  puts 'Removing all previous versions of Puppet agent...'
   package_info.each do |pkg|
     uninstall_pkg(pkg)
-  end if options[:nuclear]
+  end
 
-  uninstall_pkg(package_info[3]) if options[:update]
-
-  # Install Puppet agent if requested or not currently installed
-  #
+  puts 'Installing latest Puppet all-in-one agent...'
   pkg_name_prefix =  'puppet-agent-' + package_info[3]['latest'] + '-1.osx' + osx_ver
-  get_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
-  install_pc1(pkg_name_prefix) if !package_info[3]['installed'] || (options[:update] || options[:nuclear])
+  get_pc1(pkg_name_prefix)
+  install_pc1(pkg_name_prefix)
+
+  puts 'Installing tse/nimbus...'
+  system("/opt/puppetlabs/puppet/bin/puppet module install tse/nimbus")
+
 
   # Set up Puppet directories and put manifests in place
-  puts "\nSetting up Puppet environment..."
-  config_puppet(options[:username])
+  #puts "\nSetting up Puppet environment..."
+  # config_puppet(options[:username])
 
-  puts "\nInitiating Puppet run..."
-  system("/opt/puppetlabs/puppet/bin/puppet apply -e 'include #{$module_name}'")
+  # puts "\nInitiating Puppet run..."
 end

@@ -1,4 +1,4 @@
-# seteam-demostack
+# tse-toolkit
 Bootstrap TSE demo environment on a Mac OSX box. Ruby script (install.rb) will pull
 down necessary bits and packages to build base environment needed to bootstrap rest of TSE demo
 stack (Puppet client binaries and requisite code).
