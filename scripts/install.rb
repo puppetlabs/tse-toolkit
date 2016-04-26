@@ -7,21 +7,25 @@
 require 'open-uri'
 require 'optparse'
 require 'fileutils'
+$pkgs            = ['facter', 'hiera', 'puppet', 'puppet-agent']
+$osx_ver         = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
+$pc1_url         = 'http://downloads.puppetlabs.com/mac/' + $osx_ver + '/PC1/x86_64/'
+$pc1_url_lines   = `curl --silent #{$pc1_url}`.split("\n")
+$nimbus_conf_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/nimbus/nimbus-base.conf'
+$package_info    = []
 
-def config_puppet(username)
-  # Ensure basic directory structure.  Set up parameters and move Puppet
-  # module into place. Populates user parameter.
+def config_nimbus(username)
+  # Pull down default nimbus config from tse-toolkit repo and modify with user
   # Params:
-  # +username+:: user account name that will be placed in params.pp
-
-  FileUtils.mkdir_p($puppet_modulepath) unless File.directory?($puppet_modulepath)
-  system("curl  #{$module_tarball_url} -o /private/tmp/#{$module_name}.tar.gz")
-  system("tar xzf /private/tmp/#{$module_name}.tar.gz -C /private/tmp")
-  FileUtils.cp_r("/private/tmp/#{$module_name}", $puppet_modulepath)
-  params_file = "#{$module_path}/manifests/params.pp"
-  params_text = File.read(params_file)
-  params_update = params_text.gsub(/\$user\s+ \=\ .*/, "$user = '#{username}'")
-  File.open(params_file, 'w') { |file| file.puts params_update }
+  # +username+:: user account name that will be placed in nimbus-username.conf
+  # Returns:
+  # +nimbus_conf+:: nimbus config file path.
+  nimbus_conf   = "/Users/#{username}/nimbus-#{username}.conf"
+  system("curl  #{$nimbus_conf_url} -o #{nimbus_conf}")
+  nimbus_text   = File.read(nimbus_conf)
+  nimbus_update = nimbus_text.gsub(/user_account/, username)
+  File.open(nimbus_conf, 'w') { |file| file.puts nimbus_update }
+  return nimbus_conf
 end
 
 def get_pc1(pkg_name_prefix)
@@ -56,7 +60,7 @@ def get_latest_ver(pkg)
   # +latest+:: Latest version of a package
   versions = []
 
-  $html_lines.each do |line|
+  $pc1_url_lines.each do |line|
 		# Match the version number on the puppet html and pull that out.
 	  my_match = /href\="#{pkg}\-(\d\.\d\.\d)\-.*"/.match(line)
     if my_match
@@ -146,46 +150,37 @@ def parse_options
   options
 end
 
-# MAIN
 if __FILE__ == $PROGRAM_NAME
-
-  #$puppet_modulepath = '/etc/puppetlabs/code/environments/production/modules/'
-  #$module_name = 'toolkit'
-  #$module_path = "#{$puppet_modulepath}/#{$module_name}"
-  #$module_tarball_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/toolkit.tar.gz'
-  # Reference to older separate packages here for completeness. Deprecate soon.
-  $pkgs = ['facter', 'hiera', 'puppet', 'puppet-agent']
-  osx_ver = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
-  $pc1_url = 'http://downloads.puppetlabs.com/mac/' + osx_ver + '/PC1/x86_64/'
-  $html_lines = `curl --silent #{$pc1_url}`.split("\n")
-  package_info = []
   options = parse_options
+
 
   puts "\n\nBootstrapping Puppet Demo environment..."
   puts "Configuring environment for user #{options[:username]}"
   puts 'Getting Puppet package info on system...'
   $pkgs.each do |pkg|
-    package_info.push(pkginfo(pkg))
+    $package_info.push(pkginfo(pkg))
   end
 
   # Remove all Puppet agent packages
   puts 'Removing all previous versions of Puppet agent...'
-  package_info.each do |pkg|
+  $package_info.each do |pkg|
     uninstall_pkg(pkg)
   end
 
   puts 'Installing latest Puppet all-in-one agent...'
-  pkg_name_prefix =  'puppet-agent-' + package_info[3]['latest'] + '-1.osx' + osx_ver
+  pkg_name_prefix =  'puppet-agent-' + $package_info[3]['latest'] + '-1.osx' + $osx_ver
   get_pc1(pkg_name_prefix)
   install_pc1(pkg_name_prefix)
 
-  puts 'Installing tse/nimbus...'
+  puts 'Installing and configuring tse/nimbus...'
   system("/opt/puppetlabs/puppet/bin/puppet module install tse/nimbus")
+  nimbus_conf = config_nimbus(options[:username])
 
-
-  # Set up Puppet directories and put manifests in place
-  #puts "\nSetting up Puppet environment..."
-  # config_puppet(options[:username])
-
-  # puts "\nInitiating Puppet run..."
+  puts "\nRunning Puppet via Nimbus to set up environment..."
+  system("/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}")
+  puts "\nI've dropped your nimbus config file at #{nimbus_conf}.  You can"\
+       "\nreapply this configuration by running"\
+       "\n`/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}`."\
+       "\nOr modify this file to further customize your system."\
+       "\nPlease review documentation at https://forge.puppet.com/tse/nimbus."
 end
