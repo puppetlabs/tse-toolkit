@@ -151,8 +151,8 @@ def parse_options
 end
 
 if __FILE__ == $PROGRAM_NAME
+  puts "wtf"
   options = parse_options
-
 
   puts "\n\nBootstrapping Puppet Demo environment..."
   puts "Configuring environment for user #{options[:username]}"
