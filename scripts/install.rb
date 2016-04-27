@@ -9,6 +9,7 @@ require 'optparse'
 require 'fileutils'
 $pkgs            = ['facter', 'hiera', 'puppet', 'puppet-agent']
 $osx_ver         = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
+$pc1_ver         = /(\d+\.\d+.\d+)/.match(`pkgutil --pkg-info com.puppetlabs.puppet-agent`).to_s
 $pc1_url         = 'http://downloads.puppetlabs.com/mac/' + $osx_ver + '/PC1/x86_64/'
 $pc1_url_lines   = `curl --silent #{$pc1_url}`.split("\n")
 $nimbus_conf_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/nimbus/nimbus-base.conf'
@@ -21,9 +22,9 @@ def config_nimbus(username)
   # Returns:
   # +nimbus_conf+:: nimbus config file path.
   nimbus_conf   = "/Users/#{username}/nimbus-#{username}.conf"
-  system("curl  #{$nimbus_conf_url} -o #{nimbus_conf}")
   nimbus_text   = File.read(nimbus_conf)
   nimbus_update = nimbus_text.gsub(/user_account/, username)
+  system("curl #{$nimbus_conf_url} -o #{nimbus_conf}")
   File.open(nimbus_conf, 'w') { |file| file.puts nimbus_update }
   return nimbus_conf
 end
@@ -32,7 +33,6 @@ def get_pc1(pkg_name_prefix)
   # Downloads PC1 package to install from Puppet Labs site
   # Params:
   # +pkg_name_prefix+:: Name prefix of package to download
-
   File.open(pkg_name_prefix + '.dmg', 'wb') do |fo|
     fo.write open($pc1_url + pkg_name_prefix + '.dmg').read
   end
@@ -44,7 +44,6 @@ def pkginfo(pkg)
   # +pkgs+:: Array of packages to install
   # Returns:
   # +pkgs_info+:: Array of hashes containing all package info
-
   pkg_hash = {
                'app'       => pkg,
                'installed' => installed?(pkg),
@@ -59,7 +58,6 @@ def get_latest_ver(pkg)
   # Returns:
   # +latest+:: Latest version of a package
   versions = []
-
   $pc1_url_lines.each do |line|
 		# Match the version number on the puppet html and pull that out.
 	  my_match = /href\="#{pkg}\-(\d\.\d\.\d)\-.*"/.match(line)
@@ -77,7 +75,6 @@ def installed?(pkg)
   # +pkg+:: Package lookup
   # Returns:
   # +boolean+:: If installed or not
-
   system("pkgutil --packages| grep '^com.puppetlabs.#{pkg}$' 1>/dev/null")
 end
 
@@ -85,7 +82,6 @@ def install_pc1(pkg_name_prefix)
   # Install Puppet all-in-one package.
   # Params:
   # +pkg_name_prefix+::
-
   puts "\nInstalling #{pkg_name_prefix}..."
   system("hdiutil mount #{pkg_name_prefix}.dmg")
   system("installer -package /Volumes/#{pkg_name_prefix}/*installer.pkg -target /")
@@ -119,10 +115,8 @@ end
 def parse_options
   # Use optparse to get options
   # +options+:: Command line arguments
-  options = {}
-  options[:update] = false
+  options            = {}
   options[:username] = `logname`.chomp # default to user login name
-
   OptionParser.new do|opts|
     opts.banner = "\nUsage: sudo ./install.rb\n
                    Note: default behavior is to install all-in-one agent if it isn't already
@@ -151,26 +145,26 @@ def parse_options
 end
 
 if __FILE__ == $PROGRAM_NAME
-  puts "wtf"
   options = parse_options
-
   puts "\n\nBootstrapping Puppet Demo environment..."
   puts "Configuring environment for user #{options[:username]}"
-  puts 'Getting Puppet package info on system...'
+  puts 'Getting Puppet package info...'
+
   $pkgs.each do |pkg|
     $package_info.push(pkginfo(pkg))
   end
 
-  # Remove all Puppet agent packages
-  puts 'Removing all previous versions of Puppet agent...'
-  $package_info.each do |pkg|
-    uninstall_pkg(pkg)
+  # Either AIO is not installed or installed version isn't latest on website
+  if !$package_info[3]['installed'] || $package_info[3]['latest'] != $pc1_ver
+    puts 'Removing all previous versions of Puppet agent...'
+    $package_info.each do |pkg|
+      uninstall_pkg(pkg)
+    end
+    puts 'Installing latest Puppet all-in-one agent...'
+    pkg_name_prefix = 'puppet-agent-' + $package_info[3]['latest'] + '-1.osx' + $osx_ver
+    get_pc1(pkg_name_prefix)
+    install_pc1(pkg_name_prefix)
   end
-
-  puts 'Installing latest Puppet all-in-one agent...'
-  pkg_name_prefix =  'puppet-agent-' + $package_info[3]['latest'] + '-1.osx' + $osx_ver
-  get_pc1(pkg_name_prefix)
-  install_pc1(pkg_name_prefix)
 
   puts 'Installing and configuring tse/nimbus...'
   system("/opt/puppetlabs/puppet/bin/puppet module install tse/nimbus")
@@ -179,8 +173,8 @@ if __FILE__ == $PROGRAM_NAME
   puts "\nRunning Puppet via Nimbus to set up environment..."
   system("/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}")
   puts "\nI've dropped your nimbus config file at #{nimbus_conf}.  You can"\
-       "\nreapply this configuration by running"\
-       "\n`/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}`."\
+       "\nreapply this configuration by running:\n"\
+       "\nsudo /opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}\n"\
        "\nOr modify this file to further customize your system."\
-       "\nPlease review documentation at https://forge.puppet.com/tse/nimbus."
+       "\nPlease review documentation at https://forge.puppet.com/tse/nimbus"
 end
