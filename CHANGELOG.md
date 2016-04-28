@@ -1,10 +1,11 @@
 # Change Log
 
-## 1.1.0 (2016-04-25)
+## 1.2.0 (2016-04-25)
 
 Updates:
 
- - Shift to use tse/nimbus as main configuration for puppet.
+ - Shift to use tse/nimbus as main configuration manager for Puppet.
+ - Removed install options.  Defaults to updating to latest Puppet AIO or skipping if already on latest.
  - Cleaned up spaghetti code.
 
 
