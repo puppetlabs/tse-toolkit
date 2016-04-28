@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.0 (2016-04-25)
+
+Updates:
+
+ - Shift to use tse/nimbus as main configuration for puppet.
+ - Cleaned up spaghetti code.
+
+
 ## 1.0.0 (2016-01-16)
 
 Updates:
