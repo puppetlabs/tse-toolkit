@@ -172,9 +172,9 @@ if __FILE__ == $PROGRAM_NAME
 
   puts "\nRunning Puppet via Nimbus to set up environment..."
   system("/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}")
-  puts "\nI've dropped your nimbus config file at #{nimbus_conf}.  You can"\
+  puts "\nI've dropped your nimbus config file at #{nimbus_conf}  You can"\
        "\nreapply this configuration by running:\n"\
        "\nsudo /opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}\n"\
        "\nOr modify this file to further customize your system."\
-       "\nPlease review documentation at https://forge.puppet.com/tse/nimbus"
+       "\nPlease review documentation at https://forge.puppet.com/tse/nimbus\n\n"
 end
