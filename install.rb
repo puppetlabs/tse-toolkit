@@ -23,6 +23,7 @@ def config_nimbus(username)
   # +nimbus_conf+:: nimbus config file path.
   nimbus_conf   = "/Users/#{username}/nimbus-#{username}.conf"
   system("curl #{$nimbus_conf_url} -o #{nimbus_conf}")
+  system("chown #{username} #{nimbus_conf}")
   nimbus_text   = File.read(nimbus_conf)
   nimbus_update = nimbus_text.gsub(/user_account/, username)
   File.open(nimbus_conf, 'w') { |file| file.puts nimbus_update }
