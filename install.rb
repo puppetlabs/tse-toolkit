@@ -15,10 +15,11 @@ $pc1_url_lines   = `curl --silent #{$pc1_url}`.split("\n")
 $nimbus_conf_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/nimbus-base.conf'
 $package_info    = []
 
-def config_nimbus(username)
+def config_nimbus(username, commit)
   # Pull down default nimbus config from tse-toolkit repo and modify with user
   # Params:
   # +username+:: user account name that will be placed in nimbus-username.conf
+  # +commit+:: boolean indicating whether to download commit.
   # Returns:
   # +nimbus_conf+:: nimbus config file path.
   nimbus_conf   = "/Users/#{username}/nimbus-#{username}.conf"
@@ -27,6 +28,13 @@ def config_nimbus(username)
   nimbus_text   = File.read(nimbus_conf)
   nimbus_update = nimbus_text.gsub(/user_account/, username)
   File.open(nimbus_conf, 'w') { |file| file.puts nimbus_update }
+  # hackish commit update if option chosen
+  if commit
+    nimbus_text   = File.read(nimbus_conf)
+    nimbus_update = nimbus_text.gsub(/releases/, 'commits')
+    File.open(nimbus_conf, 'w') { |file| file.puts nimbus_update }
+  end
+
   return nimbus_conf
 end
 
@@ -128,6 +136,10 @@ def parse_options
       options[:username] = u
     end
 
+    opts.on('-c', '--commits', 'Download latest demo commit rather than release.') do
+      options[:commit] = true
+    end
+
     opts.on_tail('-h', '--help') do
       puts opts
       puts "\n\n"
@@ -169,7 +181,7 @@ if __FILE__ == $PROGRAM_NAME
 
   puts 'Installing and configuring tse/nimbus...'
   system("/opt/puppetlabs/puppet/bin/puppet module install tse/nimbus")
-  nimbus_conf = config_nimbus(options[:username])
+  nimbus_conf = config_nimbus(options[:username], options[:commit])
 
   puts "\nRunning Puppet via Nimbus to set up environment..."
   system("/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}")
