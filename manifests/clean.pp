@@ -11,7 +11,7 @@ class toolkit::clean {
   exec { 'clean-vbox-install':
     command => "/bin/rm -rf /private/var/db/.puppet_pkgdmg_installed_VirtualBox*",
     onlyif  => [
-                "/bin/test -f /private/var/db/.puppet_pkgdmg_installed_VirtualBox.*",
+                "/bin/ls /private/var/db/.puppet_pkgdmg_installed_VirtualBox.*",
                 "/bin/test ! -d /Applications/VirtualBox.app/"
                ],
   }
