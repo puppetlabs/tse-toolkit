@@ -9,6 +9,12 @@ require 'optparse'
 require 'fileutils'
 $pkgs            = ['facter', 'hiera', 'puppet', 'puppet-agent']
 $osx_ver         = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
+
+# HACK Until Puppet Mac repo gets update
+if $osx_ver == "10.12"
+  $osx_ver = "10.11"
+end
+
 $pc1_ver         = /(\d+\.\d+.\d+)/.match(`pkgutil --pkg-info com.puppetlabs.puppet-agent`).to_s
 $pc1_url         = 'http://downloads.puppetlabs.com/mac/' + $osx_ver + '/PC1/x86_64/'
 $pc1_url_lines   = `curl --silent #{$pc1_url}`.split("\n")
