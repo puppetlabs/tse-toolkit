@@ -7,17 +7,23 @@
 require 'open-uri'
 require 'optparse'
 require 'fileutils'
-$pkgs            = ['facter', 'hiera', 'puppet', 'puppet-agent']
-$osx_ver         = /(^\d+\.\d+)/.match(`sw_vers -productVersion`).to_s
+$HDIUTIL   = '/usr/bin/hdiutil'
+$INSTALLER = '/usr/sbin/installer'
+$PKGUTIL   = '/usr/sbin/pkgutil'
+$CURL      = '/usr/bin/curl'
+$SW_VERS   = '/usr/bin/sw_vers'
+$GREP      = '/usr/bin/grep'
+$pkgs      = ['facter', 'hiera', 'puppet', 'puppet-agent']
+$osx_ver   = /(^\d+\.\d+)/.match(`#{$SW_VERS} -productVersion`).to_s
 
 # HACK Until Puppet Mac repo gets update
 if $osx_ver == "10.12"
   $osx_ver = "10.11"
 end
 
-$pc1_ver         = /(\d+\.\d+.\d+)/.match(`pkgutil --pkg-info com.puppetlabs.puppet-agent`).to_s
+$pc1_ver         = /(\d+\.\d+.\d+)/.match(`#{$PKGUTIL} --pkg-info com.puppetlabs.puppet-agent`).to_s
 $pc1_url         = 'http://downloads.puppetlabs.com/mac/' + $osx_ver + '/PC1/x86_64/'
-$pc1_url_lines   = `curl --silent #{$pc1_url}`.split("\n")
+$pc1_url_lines   = `#{$CURL} --silent #{$pc1_url}`.split("\n")
 $nimbus_conf_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/nimbus-base.conf'
 $package_info    = []
 
@@ -29,7 +35,7 @@ def config_nimbus(username, commit)
   # Returns:
   # +nimbus_conf+:: nimbus config file path.
   nimbus_conf   = "/Users/#{username}/nimbus-#{username}.conf"
-  system("curl #{$nimbus_conf_url} -o #{nimbus_conf}")
+  system("#{$CURL} #{$nimbus_conf_url} -o #{nimbus_conf}")
   system("chown #{username} #{nimbus_conf}")
   nimbus_text   = File.read(nimbus_conf)
   nimbus_update = nimbus_text.gsub(/user_account/, username)
@@ -90,7 +96,7 @@ def installed?(pkg)
   # +pkg+:: Package lookup
   # Returns:
   # +boolean+:: If installed or not
-  system("pkgutil --packages| grep '^com.puppetlabs.#{pkg}$' 1>/dev/null")
+  system("#{$PKGUTIL} --packages| #{$GREP} ^com.puppetlabs.#{pkg}$ 1>/dev/null")
 end
 
 def install_pc1(pkg_name_prefix)
@@ -98,8 +104,8 @@ def install_pc1(pkg_name_prefix)
   # Params:
   # +pkg_name_prefix+::
   puts "\nInstalling #{pkg_name_prefix}..."
-  system("hdiutil mount #{pkg_name_prefix}.dmg")
-  system("installer -package /Volumes/#{pkg_name_prefix}/*installer.pkg -target /")
+  system("#{$HDIUTIL} mount #{pkg_name_prefix}.dmg")
+  system("#{$INSTALLER} -package /Volumes/#{pkg_name_prefix}/*installer.pkg -target /")
   puts 'Cleaning up...'
   system("umount /Volumes/#{pkg_name_prefix}")
   system("rm #{pkg_name_prefix}.dmg")
@@ -113,17 +119,17 @@ def uninstall_pkg(pkg_hash)
   # HACK: to clean up files from uninstall but retain configuration files.
   # Should revisit after all in one client is released.
   if pkg_hash['app'] != 'puppet-agent' # For old agents since this left files everywhere
-    system("for f in $(pkgutil --only-files --files com.puppetlabs.#{pkg_hash['app']}|
-           grep -v etc); do sudo rm /$f; done")
-    system("for d in $(pkgutil --only-dirs --files com.puppetlabs.#{pkg_hash['app']} |
-           grep #{pkg_hash['app']} | grep -v etc | tail -r); do sudo rmdir /$d; done")
+    system("for f in $(#{$PKGUTIL} --only-files --files com.puppetlabs.#{pkg_hash['app']}|
+           #{$GREP} -v etc); do sudo rm /$f; done")
+    system("for d in $(#{$PKGUTIL} --only-dirs --files com.puppetlabs.#{pkg_hash['app']} |
+           #{$GREP} #{pkg_hash['app']} | #{$GREP} -v etc | tail -r); do sudo rmdir /$d; done")
   else # Should be all-in-one agent and cleaner to remove
     system('rm -rf /opt/puppetlabs')
     system('rm /usr/bin/facter') if File.exist?('/usr/bin/facter')
     system('rm /usr/bin/hiera') if File.exist?('/usr/bin/hiera')
     system('rm /usr/bin/puppet') if File.exist?('/usr/bin/puppet')
   end
-  system("pkgutil --forget com.puppetlabs.#{pkg_hash['app']}")
+  system("#{$PKGUTIL} --forget com.puppetlabs.#{pkg_hash['app']}")
   puts "\n"
 end
 
@@ -164,6 +170,7 @@ def parse_options
 end
 
 if __FILE__ == $PROGRAM_NAME
+
   options = parse_options
   puts "\n\nBootstrapping Puppet Demo environment..."
   puts "Configuring environment for user #{options[:username]}"
