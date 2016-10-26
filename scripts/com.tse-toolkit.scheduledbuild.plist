@@ -24,12 +24,13 @@
   <key>StandardOutPath</key>
   <string>/tmp/tse-toolkit.out</string>
 
+  <!-- Run everyday at 6:15am -->
   <key>StartCalendarInterval</key>
   <dict>
     <key>Hour</key>
-    <integer>08</integer>
+    <integer>06</integer>
     <key>Minute</key>
-    <integer>25</integer>
+    <integer>15</integer>
   </dict>
 
 </dict>
