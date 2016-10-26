@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script used to bring up environments for Mac minis as tseadmin
+# Script used to bring up environments for Mac minis as specified user
+USER=tseadmin
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin
-cd /Users/tseadmin
+
+cd /Users/$USER
 curl -sL http://git.io/tse-toolkit | sudo ruby 
-cd /Users/tseadmin/vagrant_tse_demos/pe-demo*
-sleep 2
-chown tseadmin .vagrant
-sudo -u tseadmin /Users/tseadmin/vagrant_tse_demos/pe-demo*/scripts/init.sh >> /Users/tseadmin/vagrant_tse_demos/init.log
-vagrant puppetize | sudo /opt/puppetlabs/puppet/bin/puppet apply
+cd /Users/$USER/vagrant_tse_demos/pe-demo*
+sudo -u $USER /Users/$USER/vagrant_tse_demos/pe-demo*/scripts/init.sh >> /Users/$USER/vagrant_tse_demos/init.log
+sudo -u $USER vagrant puppetize | sudo /opt/puppetlabs/puppet/bin/puppet apply
