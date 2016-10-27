@@ -16,7 +16,7 @@
   <string>tseadmin</string>
 
   <key>RunAtLoad</key>
-  <true/>
+  <false/>
 
   <key>StandardErrorPath</key>
   <string>/tmp/tse-toolkit.err</string>
