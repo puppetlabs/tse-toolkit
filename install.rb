@@ -16,11 +16,6 @@ $GREP      = '/usr/bin/grep'
 $pkgs      = ['facter', 'hiera', 'puppet', 'puppet-agent']
 $osx_ver   = /(^\d+\.\d+)/.match(`#{$SW_VERS} -productVersion`).to_s
 
-# HACK Until Puppet Mac repo gets update
-if $osx_ver == "10.12"
-  $osx_ver = "10.11"
-end
-
 $pc1_ver         = /(\d+\.\d+.\d+)/.match(`#{$PKGUTIL} --pkg-info com.puppetlabs.puppet-agent`).to_s
 $pc1_url         = 'http://downloads.puppetlabs.com/mac/' + $osx_ver + '/PC1/x86_64/'
 $pc1_url_lines   = `#{$CURL} --silent #{$pc1_url}`.split("\n")
