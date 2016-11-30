@@ -183,8 +183,6 @@ if __FILE__ == $PROGRAM_NAME
   puts "Configuring environment for user #{options[:username]}"
   puts 'Getting Puppet package info...'
 
-  puts options
-
   $pkgs.each do |pkg|
     $package_info.push(pkginfo(pkg))
   end
