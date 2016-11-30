@@ -204,7 +204,6 @@ if __FILE__ == $PROGRAM_NAME
   puts 'Installing and configuring tse/nimbus...'
   system("/opt/puppetlabs/puppet/bin/puppet module install tse/nimbus")
   nimbus_conf = config_nimbus(options[:username], options[:commit], options[:branch])
-  exit
 
   puts "\nRunning Puppet via Nimbus to set up environment..."
   system("/opt/puppetlabs/puppet/bin/puppet nimbus apply #{nimbus_conf}")
