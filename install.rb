@@ -19,7 +19,7 @@ $osx_ver   = /(^\d+\.\d+)/.match(`#{$SW_VERS} -productVersion`).to_s
 $pc1_ver         = /(\d+\.\d+.\d+)/.match(`#{$PKGUTIL} --pkg-info com.puppetlabs.puppet-agent`).to_s
 $pc1_url         = 'http://downloads.puppetlabs.com/mac/' + $osx_ver + '/PC1/x86_64/'
 $pc1_url_lines   = `#{$CURL} --silent #{$pc1_url}`.split("\n")
-$nimbus_conf_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/master/nimbus-base.conf'
+$nimbus_conf_url = 'https://raw.githubusercontent.com/puppetlabs/tse-toolkit/20165-update/nimbus-base.conf'
 $package_info    = []
 
 def config_nimbus(username, commit, branch)
