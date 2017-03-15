@@ -46,7 +46,7 @@ def config_nimbus(username, commit, branch)
   # specify branch if chosen
   if branch
     nimbus_text   = File.read(nimbus_conf)
-    nimbus_update = nimbus_text.gsub(/2016.5.x/, branch)
+    nimbus_update = nimbus_text.gsub(/2017.1.x/, branch)
     File.open(nimbus_conf, 'w') { |file| file.puts nimbus_update }
   end
 
